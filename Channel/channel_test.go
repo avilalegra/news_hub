@@ -16,13 +16,21 @@ var rssParsingTests = []struct {
 	xml     string
 	channel Channel
 }{
-
+	{`<rss version="2.0"><channel><title>Phoronix</title><link>https://www.phoronix.com/</link><description><![CDATA[Linux Hardware Reviews & News]]></description></channel></rss>`,
+		Channel{
+			Title:       `Phoronix`,
+			Link:        `https://www.phoronix.com/`,
+			Description: `Linux Hardware Reviews & News`,
+		},
+	},
 	{
 		`<?xml version="1.0" encoding="UTF-8"?><rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:media="http://search.yahoo.com/mrss/" xmlns:nyt="http://www.nytimes.com/namespaces/rss/2.0" version="2.0"><channel><title>NYT &gt; Top Stories</title><link>https://www.nytimes.com</link><description>NYT channel description</description><language>en-us</language><lastBuildDate>Sun, 19 Sep 2021 06:27:36 +0000</lastBuildDate><image><title>NYT > Top Stories</title><url>https://static01.nyt.com/images/misc/NYT_logo_rss_250x40.png</url><link>https://www.nytimes.com</link></image></channel></rss>`,
 		Channel{
-			Title:       `NYT > Top Stories`,
-			Link:        `https://www.nytimes.com`,
-			Description: `NYT channel description`,
+			Title:         `NYT > Top Stories`,
+			Link:          `https://www.nytimes.com`,
+			Description:   `NYT channel description`,
+			Language:      "en-us",
+			LastBuildDate: ChannelTime{Time: parseTime(`Sun, 19 Sep 2021 06:27:36 +0000`)},
 		},
 	},
 }
@@ -34,6 +42,8 @@ func TestRssParsing(t *testing.T) {
 		assert.Equal(t, tt.channel.Title, channel.Title)
 		assert.Equal(t, tt.channel.Link, channel.Link)
 		assert.Equal(t, tt.channel.Description, channel.Description)
+		assert.Equal(t, tt.channel.Language, channel.Language)
+		assert.Equal(t, tt.channel.LastBuildDate, channel.LastBuildDate)
 	}
 }
 
