@@ -46,7 +46,6 @@ func (cht *ChannelTime) UnmarshalXML(d *xml.Decoder, start xml.StartElement) err
 		return err
 	}
 	cht.Time = &parse
-
 	return nil
 }
 
@@ -57,7 +56,6 @@ type Trimmer struct {
 func (tr Trimmer) Token() (xml.Token, error) {
 	t, err := tr.dec.Token()
 	if cd, ok := t.(xml.CharData); ok {
-
 		t = xml.CharData(bytes.TrimSpace(cd))
 	}
 	return t, err
@@ -65,12 +63,10 @@ func (tr Trimmer) Token() (xml.Token, error) {
 
 func newTokenReader(xmlText []byte) xml.TokenReader {
 	baseDecoder := xml.NewDecoder(bytes.NewReader(xmlText))
-
 	baseDecoder.Strict = false
 	//This allow marking tags without namespaces as ex. xml:"_ link"
 	//so it doesn't collision with ex. "atom:link"
 	baseDecoder.DefaultSpace = "_"
-
 	return Trimmer{baseDecoder}
 }
 
@@ -78,11 +74,9 @@ func Parse(xmlText []byte) (*Channel, error) {
 	var rss rss
 	dec := xml.NewTokenDecoder(newTokenReader(xmlText))
 	err := dec.Decode(&rss)
-
 	if err != nil {
 		return nil, err
 	}
-
 	return &rss.Channel, err
 }
 
@@ -100,17 +94,13 @@ type Source struct {
 
 func (src Source) Fetch() (*Channel, error) {
 	xmlText, err := src.ContentFetcher.Get(src.Url)
-
 	if err != nil {
 		return nil, err
 	}
-
 	channel, err := Parse(xmlText)
-
 	if err != nil {
 		return nil, err
 	}
-
 	return channel, nil
 }
 
@@ -121,19 +111,14 @@ type ContentFetcher interface {
 type DefaultContentFetcher struct{}
 
 func (f DefaultContentFetcher) Get(url string) ([]byte, error) {
-
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err
 	}
-
 	defer resp.Body.Close()
-
 	body, err := io.ReadAll(resp.Body)
-
 	if err != nil {
 		return nil, err
 	}
-
 	return body, nil
 }
