@@ -13,16 +13,24 @@ type rss struct {
 }
 
 type Channel struct {
-	XMLName       xml.Name    `xml:"channel"`
-	Title         string      `xml:"title"`
-	Link          string      `xml:"_ link"`
-	Description   string      `xml:"description"`
-	Language      string      `xml:"language"`
-	LastBuildDate ChannelTime `xml:"lastBuildDate"`
+	XMLName       xml.Name      `xml:"channel"`
+	Title         string        `xml:"title"`
+	Link          string        `xml:"_ link"`
+	Description   string        `xml:"description"`
+	Language      string        `xml:"language"`
+	LastBuildDate ChannelTime   `xml:"lastBuildDate"`
+	Items         []ChannelItem `xml:"item"`
 }
 
 type ChannelTime struct {
 	*time.Time
+}
+
+type ChannelItem struct {
+	XMLName     xml.Name `xml:"item"`
+	Title       string   `xml:"title"`
+	Link        string   `xml:"link"`
+	Description string   `xml:"description"`
 }
 
 func (cht *ChannelTime) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
@@ -47,6 +55,7 @@ type Trimmer struct {
 func (tr Trimmer) Token() (xml.Token, error) {
 	t, err := tr.dec.Token()
 	if cd, ok := t.(xml.CharData); ok {
+
 		t = xml.CharData(bytes.TrimSpace(cd))
 	}
 	return t, err
@@ -55,6 +64,7 @@ func (tr Trimmer) Token() (xml.Token, error) {
 func newTokenReader(xmlText []byte) xml.TokenReader {
 	baseDecoder := xml.NewDecoder(bytes.NewReader(xmlText))
 
+	baseDecoder.Strict = false
 	//This allow marking tags without namespaces as ex. xml:"_ link"
 	//so it doesn't collision with ex. "atom:link"
 	baseDecoder.DefaultSpace = "_"
@@ -71,5 +81,5 @@ func Parse(xmlText []byte) (*Channel, error) {
 		return nil, err
 	}
 
-	return &rss.Channel, nil
+	return &rss.Channel, err
 }

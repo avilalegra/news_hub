@@ -16,7 +16,8 @@ var rssParsingTests = []struct {
 	xml     string
 	channel Channel
 }{
-	{`<rss version="2.0"><channel><title>Phoronix</title><link>https://www.phoronix.com/</link><description><![CDATA[Linux Hardware Reviews & News]]></description></channel></rss>`,
+	{
+		`<rss version="2.0"><channel><title>Phoronix</title><link>https://www.phoronix.com/</link><description><![CDATA[Linux Hardware Reviews & News]]></description></channel></rss>`,
 		Channel{
 			Title:       `Phoronix`,
 			Link:        `https://www.phoronix.com/`,
@@ -43,10 +44,52 @@ var rssParsingTests = []struct {
 			LastBuildDate: ChannelTime{Time: parseTime(`Mon, 27 Sep 2021 13:54:35 GMT`)},
 		},
 	},
+	{
+		`<rss version="2.0"><channel><title>Phoronix</title><link>https://www.phoronix.com/</link><description>Linux Hardware Reviews & News</description><language>en-us</language><item><title>AMD Posts Code Enabling "Cyan Skillfish" Display Support Due To Different DCN2 Variant</title><link>https://www.phoronix.com/scan.php?page=news_item&px=AMD-Cyan-Skillfish-DCN-2.01</link><guid>https://www.phoronix.com/scan.php?page=news_item&px=AMD-Cyan-Skillfish-DCN-2.01</guid><description>Since July we've seen AMD open-source driver engineers posting code for "Cyan Skillfish" as an APU with Navi 1x graphics. While initial support for Cyan Skillfish was merged for Linux 5.15, it turns out the display code isn't yet wired up due to being a different DCN2 variant for its display block...</description><pubDate>Tue, 28 Sep 2021 00:00:00 -0400</pubDate></item><item><title>Linux 5.16 To Bring Initial DisplayPort 2.0 Support For AMD Radeon Driver (AMDGPU)</title><link>https://www.phoronix.com/scan.php?page=news_item&px=AMDGPU-DP-2.0-Linux-5.16</link><guid>https://www.phoronix.com/scan.php?page=news_item&px=AMDGPU-DP-2.0-Linux-5.16</guid><description>A batch of feature updates was submitted today for DRM-Next of early feature work slated to come to the next version of the Linux kernel...</description><pubDate>Mon, 27 Sep 2021 17:46:34 -0400</pubDate></item></channel></rss>`,
+		Channel{
+			Title:       `Phoronix`,
+			Link:        `https://www.phoronix.com/`,
+			Description: `Linux Hardware Reviews & News`,
+			Language:    "en-us",
+			Items: []ChannelItem{
+				{
+					Title:       `AMD Posts Code Enabling "Cyan Skillfish" Display Support Due To Different DCN2 Variant`,
+					Link:        `https://www.phoronix.com/scan.php?page=news_item&px=AMD-Cyan-Skillfish-DCN-2.01`,
+					Description: `Since July we've seen AMD open-source driver engineers posting code for "Cyan Skillfish" as an APU with Navi 1x graphics. While initial support for Cyan Skillfish was merged for Linux 5.15, it turns out the display code isn't yet wired up due to being a different DCN2 variant for its display block...`,
+				},
+				{
+					Title:       `Linux 5.16 To Bring Initial DisplayPort 2.0 Support For AMD Radeon Driver (AMDGPU)`,
+					Link:        `https://www.phoronix.com/scan.php?page=news_item&px=AMDGPU-DP-2.0-Linux-5.16`,
+					Description: `A batch of feature updates was submitted today for DRM-Next of early feature work slated to come to the next version of the Linux kernel...`,
+				},
+			},
+		},
+	},
+	{
+		`<?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/"><channel><title>Noticias en rtve.es</title><description>RSS Tags</description><link>http://www.rtve.es</link><item><title>Erupción en La Palma, en directo | La lava llega a 800 metros del mar y cambia de dirección al norte</title><link>http://www.rtve.es/noticias/20210928/erupcion-palma-directo-lava-llega-800-metros-del-mar-cambia-direccion-norte/2175602.shtml</link><pubDate>Tue, 28 Sep 2021 12:10:00 +0200</pubDate><description>&lt;ul&gt; &lt;li&gt;Varios n&amp;uacute;cleos poblacionales del municipio de Tazacorte han sido confinados&lt;/li&gt; &lt;li&gt;La colada de lava podr&amp;iacute;a llegar a la costa en las pr&amp;oacute;ximas horas&lt;/li&gt; &lt;/ul&gt;&lt;br/&gt;&lt;a href="http://www.rtve.es/noticias/20210928/erupcion-palma-directo-lava-llega-800-metros-del-mar-cambia-direccion-norte/2175602.shtml"&gt;Leer la noticia completa&lt;/a&gt;&lt;img src="http://secure-uk.imrworldwide.com/cgi-bin/m?ci=es-rssrtve&amp;cg=F-N-B-TENOTICI-TESESPE01-TES800089&amp;si=http://www.rtve.es/noticias/20210928/erupcion-palma-directo-lava-llega-800-metros-del-mar-cambia-direccion-norte/2175602.shtml" alt=""/&gt;</description></item><item><title>Guía de restricciones COVID: nuevas medidas en ocio nocturno, hostelería y aforos</title><link>http://www.rtve.es/noticias/20210928/guia-restricciones-covid-nuevas-medidas-ocio-nocturno-hosteleria-aforos/2041269.shtml</link><pubDate>Tue, 28 Sep 2021 12:02:00 +0200</pubDate><description>&lt;ul&gt; &lt;li&gt;Repasa las principales medidas y restricciones frente a la COVID-19, comunidad a comunidad&lt;/li&gt; &lt;li&gt;&lt;a href="https://www.rtve.es/noticias/20210928/coronavirus-covid-directo-espana-mundo-ultima-hora/2175601.shtml" target="_blank"&gt;Coronavirus: &amp;uacute;ltima hora&lt;/a&gt;&amp;nbsp;|&amp;nbsp;&lt;a href="https://www.rtve.es/noticias/20210924/mapa-del-coronavirus-espana/2004681.shtml" target="_blank"&gt;Mapa de Espa&amp;ntilde;a&lt;/a&gt;&amp;nbsp;|&amp;nbsp;&lt;a href="https://www.rtve.es/noticias/20210924/ocupacion-camas-covid-19-hospitales-espanoles/2042349.shtml" target="_blank"&gt;Hospitales y UCI&lt;/a&gt;&lt;/li&gt; &lt;li&gt;&lt;a href="https://www.rtve.es/noticias/20210924/campana-vacunacion-espana/2062499.shtml" target="_blank"&gt;Vacunas en Espa&amp;ntilde;a&lt;/a&gt;&amp;nbsp;|&amp;nbsp;&lt;a href="https://www.rtve.es/noticias/20210924/mapa-mundial-del-coronavirus/1998143.shtml" target="_blank"&gt;Mapa mundial&amp;#8203;&lt;/a&gt;&amp;nbsp;|&amp;nbsp;&lt;a href="https://www.rtve.es/lab/vacunacion-espana-coronavirus/"&gt;Especial: La gran vacunaci&amp;oacute;n&lt;/a&gt;&lt;/li&gt; &lt;/ul&gt;&lt;br/&gt;&lt;a href="http://www.rtve.es/noticias/20210928/guia-restricciones-covid-nuevas-medidas-ocio-nocturno-hosteleria-aforos/2041269.shtml"&gt;Leer la noticia completa&lt;/a&gt;&lt;img src="http://secure-uk.imrworldwide.com/cgi-bin/m?ci=es-rssrtve&amp;cg=F-N-B-TENOTICI-TESESPE01-TELCO20VX&amp;si=http://www.rtve.es/noticias/20210928/guia-restricciones-covid-nuevas-medidas-ocio-nocturno-hosteleria-aforos/2041269.shtml" alt=""/&gt;</description></item></channel></rss>`,
+		Channel{
+			Title:       `Noticias en rtve.es`,
+			Link:        `http://www.rtve.es`,
+			Description: `RSS Tags`,
+			Items: []ChannelItem{
+				{
+					Title:       `Erupción en La Palma, en directo | La lava llega a 800 metros del mar y cambia de dirección al norte`,
+					Link:        `http://www.rtve.es/noticias/20210928/erupcion-palma-directo-lava-llega-800-metros-del-mar-cambia-direccion-norte/2175602.shtml`,
+					Description: `<ul> <li>Varios n&uacute;cleos poblacionales del municipio de Tazacorte han sido confinados</li> <li>La colada de lava podr&iacute;a llegar a la costa en las pr&oacute;ximas horas</li> </ul><br/><a href="http://www.rtve.es/noticias/20210928/erupcion-palma-directo-lava-llega-800-metros-del-mar-cambia-direccion-norte/2175602.shtml">Leer la noticia completa</a><img src="http://secure-uk.imrworldwide.com/cgi-bin/m?ci=es-rssrtve&cg=F-N-B-TENOTICI-TESESPE01-TES800089&si=http://www.rtve.es/noticias/20210928/erupcion-palma-directo-lava-llega-800-metros-del-mar-cambia-direccion-norte/2175602.shtml" alt=""/>`,
+				},
+				{
+					Title:       `Guía de restricciones COVID: nuevas medidas en ocio nocturno, hostelería y aforos`,
+					Link:        `http://www.rtve.es/noticias/20210928/guia-restricciones-covid-nuevas-medidas-ocio-nocturno-hosteleria-aforos/2041269.shtml`,
+					Description: `<ul> <li>Repasa las principales medidas y restricciones frente a la COVID-19, comunidad a comunidad</li> <li><a href="https://www.rtve.es/noticias/20210928/coronavirus-covid-directo-espana-mundo-ultima-hora/2175601.shtml" target="_blank">Coronavirus: &uacute;ltima hora</a>&nbsp;|&nbsp;<a href="https://www.rtve.es/noticias/20210924/mapa-del-coronavirus-espana/2004681.shtml" target="_blank">Mapa de Espa&ntilde;a</a>&nbsp;|&nbsp;<a href="https://www.rtve.es/noticias/20210924/ocupacion-camas-covid-19-hospitales-espanoles/2042349.shtml" target="_blank">Hospitales y UCI</a></li> <li><a href="https://www.rtve.es/noticias/20210924/campana-vacunacion-espana/2062499.shtml" target="_blank">Vacunas en Espa&ntilde;a</a>&nbsp;|&nbsp;<a href="https://www.rtve.es/noticias/20210924/mapa-mundial-del-coronavirus/1998143.shtml" target="_blank">Mapa mundial&#8203;</a>&nbsp;|&nbsp;<a href="https://www.rtve.es/lab/vacunacion-espana-coronavirus/">Especial: La gran vacunaci&oacute;n</a></li> </ul><br/><a href="http://www.rtve.es/noticias/20210928/guia-restricciones-covid-nuevas-medidas-ocio-nocturno-hosteleria-aforos/2041269.shtml">Leer la noticia completa</a><img src="http://secure-uk.imrworldwide.com/cgi-bin/m?ci=es-rssrtve&cg=F-N-B-TENOTICI-TESESPE01-TELCO20VX&si=http://www.rtve.es/noticias/20210928/guia-restricciones-covid-nuevas-medidas-ocio-nocturno-hosteleria-aforos/2041269.shtml" alt=""/>`,
+				},
+			},
+		},
+	},
 }
 
 func TestRssParsing(t *testing.T) {
 	for _, tt := range rssParsingTests {
+
 		channel, _ := Parse([]byte(tt.xml))
 
 		assert.Equal(t, tt.channel.Title, channel.Title, "Title parsing error")
@@ -54,6 +97,13 @@ func TestRssParsing(t *testing.T) {
 		assert.Equal(t, tt.channel.Description, channel.Description, "Description parsing error")
 		assert.Equal(t, tt.channel.Language, channel.Language, "Language parsing error")
 		assert.Equal(t, tt.channel.LastBuildDate, channel.LastBuildDate, "LastBuildDate parsing error")
+
+		for i, ttitem := range tt.channel.Items {
+			assert.Equal(t, ttitem.Title, channel.Items[i].Title, "item title parsing error")
+			assert.Equal(t, ttitem.Link, channel.Items[i].Link, "item link parsing error")
+			assert.Equal(t, ttitem.Description, channel.Items[i].Description, "item description parsing error")
+		}
+
 	}
 }
 
