@@ -6,6 +6,8 @@ import (
 	"io"
 	"net/http"
 	"time"
+
+	"avilego.me/news_hub/news"
 )
 
 type rss struct {
@@ -102,6 +104,36 @@ func (src Source) Fetch() (*Channel, error) {
 		return nil, err
 	}
 	return channel, nil
+}
+
+func (src Source) FetchNews() ([]*news.Extract, error) {
+	ch, err := src.Fetch()
+
+	if err != nil {
+		return nil, err
+	}
+
+	extSource := news.Source{
+		Title:       ch.Title,
+		Link:        ch.Link,
+		Description: ch.Description,
+		Language:    ch.Language,
+	}
+
+	extracts := make([]*news.Extract, len(ch.Items))
+
+	for i, item := range ch.Items {
+		ext := news.Extract{
+			Title:       item.Title,
+			Link:        item.Link,
+			Description: item.Description,
+			Source:      &extSource,
+		}
+
+		extracts[i] = &ext
+	}
+
+	return extracts, nil
 }
 
 type ContentFetcher interface {

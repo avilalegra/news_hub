@@ -1,10 +1,11 @@
 package channel
 
 import (
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestRssParsing(t *testing.T) {
@@ -59,6 +60,26 @@ func TestRssFetch(t *testing.T) {
 
 		assert.NotNil(t, channel)
 	}
+}
+
+func TestNewsProvider(t *testing.T) {
+	tdata := rssParsingTests[3]
+	mksource := newMockedSource(tdata.channel.Link, tdata.xml)
+
+	fnews, _ := mksource.FetchNews()
+
+	assert.Equal(t, len(fnews), 2)
+
+	for _, fn := range fnews {
+		assert.NotNil(t, fn)
+	}
+}
+
+func newMockedSource(link string, xmlText string) Source {
+	cfmock := new(ContentFetcherMock)
+	cfmock.On("Get", link).Return([]byte(xmlText), nil)
+	return Source{Url: link, ContentFetcher: cfmock}
+
 }
 
 func parseTime(timeExpr string) *time.Time {
