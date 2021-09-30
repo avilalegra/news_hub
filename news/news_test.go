@@ -1,62 +1,59 @@
 package news
 
 import (
-	"testing"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"testing"
 )
 
-type NewsProviderMock struct {
+type ProviderMock struct {
 	mock.Mock
 }
 
-func (m *NewsProviderMock) FetchNews() ([]Extract, error) {
+func (m *ProviderMock) FetchNews() ([]Preview, error) {
 	args := m.Called()
-	return args.Get(0).([]Extract), args.Error(1)
+	return args.Get(0).([]Preview), args.Error(1)
 }
 
-func makeNewsProviderMock(extracts []Extract) NewsProvider {
-	cfmock := new(NewsProviderMock)
-	cfmock.On("FetchNews").Return(extracts, nil)
-
-	return cfmock
+func makeNewsProviderMock(extracts []Preview) Provider {
+	provMock := new(ProviderMock)
+	provMock.On("FetchNews").Return(extracts, nil)
+	return provMock
 }
 
 func TestUpdate(t *testing.T) {
-	for _, tdata := range updateTest {
-		c, _ := Update(tdata.provider)
-
-		assert.Equal(t, tdata.count, c)
-		for _, tnew := range tdata.news {
-			assert.Contains(t, Register, tnew)
+	for _, tData := range updateTestData {
+		c, _ := Update(tData.provider)
+		assert.Equal(t, tData.count, c)
+		for _, tPreview := range tData.previews {
+			assert.Contains(t, register, tPreview)
 		}
 	}
 }
 
 func TestAddNews(t *testing.T) {
-	for i, tdata := range extracts {
-		Add(tdata)
+	for i, tData := range extracts {
+		Add(tData)
 		all := All()
-		assert.Contains(t, all, tdata)
+		assert.Contains(t, all, tData)
 		assert.Equal(t, i+1, len(all))
 	}
 }
 
-var updateTest = []struct {
-	provider NewsProvider
+var updateTestData = []struct {
+	provider Provider
 	count    int
-	news     []Extract
+	previews []Preview
 }{
 	{
 		provider: makeNewsProviderMock(extracts[0:2]),
 		count:    2,
-		news:     extracts[0:2],
+		previews: extracts[0:2],
 	},
 	{
 		provider: makeNewsProviderMock(extracts[2:]),
 		count:    2,
-		news:     extracts[2:],
+		previews: extracts[2:],
 	},
 }
 
@@ -74,7 +71,7 @@ var sources = map[string]*Source{
 	},
 }
 
-var extracts = []Extract{
+var extracts = []Preview{
 	{
 		Title:       `AMD Posts Code Enabling "Cyan Skillfish" Display Support Due To Different DCN2 Variant`,
 		Link:        `https://www.phoronix.com/scan.php?page=news_item&px=AMD-Cyan-Skillfish-DCN-2.01`,

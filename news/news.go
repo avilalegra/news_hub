@@ -7,54 +7,52 @@ type Source struct {
 	Language    string
 }
 
-type Extract struct {
+type Preview struct {
 	Title       string
 	Link        string
 	Description string
 	Source      *Source
 }
 
-type NewsProvider interface {
-	FetchNews() ([]Extract, error)
+type Provider interface {
+	FetchNews() ([]Preview, error)
 }
 
-var Register []Extract
+var register []Preview
 
-func Update(providers ...NewsProvider) (int, []error) {
-	recentNews := make([]Extract, 0, len(providers))
+func Update(providers ...Provider) (int, []error) {
+	recentNews := make([]Preview, 0, len(providers))
 	errors := make([]error, 0)
-	reschan := make(chan []Extract, 1)
-	errchan := make(chan []error, 1)
+	resChan := make(chan []Preview, 1)
+	errChan := make(chan []error, 1)
 
 	for _, p := range providers {
-		go func(prv NewsProvider, reschan chan<- []Extract, errchan chan<- []error) {
-			news, err := prv.FetchNews()
+		go func(prv Provider, resChan chan<- []Preview, errChan chan<- []error) {
+			previews, err := prv.FetchNews()
 			if err != nil {
-				errchan <- errors
+				errChan <- errors
 			} else {
-				reschan <- news
+				resChan <- previews
 			}
-		}(p, reschan, errchan)
+		}(p, resChan, errChan)
 	}
 
 	for i := 0; i < len(providers); i++ {
 		select {
-		case news := <-reschan:
-			recentNews = append(recentNews, news...)
-		case errs := <-errchan:
+		case previews := <-resChan:
+			recentNews = append(recentNews, previews...)
+		case errs := <-errChan:
 			errors = append(errors, errs...)
 		}
 	}
-
-	Register = recentNews
-
+	register = recentNews
 	return len(recentNews), errors
 }
 
-func Add(extract Extract) {
-	Register = append(Register, extract)
+func Add(preview Preview) {
+	register = append(register, preview)
 }
 
-func All() []Extract {
-	return Register
+func All() []Preview {
+	return register
 }

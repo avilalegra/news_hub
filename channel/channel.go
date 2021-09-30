@@ -1,13 +1,12 @@
 package channel
 
 import (
+	"avilego.me/news_hub/news"
 	"bytes"
 	"encoding/xml"
 	"io"
 	"net/http"
 	"time"
-
-	"avilego.me/news_hub/news"
 )
 
 type rss struct {
@@ -17,33 +16,33 @@ type rss struct {
 }
 
 type Channel struct {
-	XMLName       xml.Name      `xml:"channel"`
-	Title         string        `xml:"title"`
-	Link          string        `xml:"_ link"`
-	Description   string        `xml:"description"`
-	Language      string        `xml:"language"`
-	LastBuildDate ChannelTime   `xml:"lastBuildDate"`
-	Items         []ChannelItem `xml:"item"`
+	XMLName       xml.Name `xml:"channel"`
+	Title         string   `xml:"title"`
+	Link          string   `xml:"_ link"`
+	Description   string   `xml:"description"`
+	Language      string   `xml:"language"`
+	LastBuildDate Time     `xml:"lastBuildDate"`
+	Items         []Item   `xml:"item"`
 }
 
-type ChannelTime struct {
+type Time struct {
 	*time.Time
 }
 
-type ChannelItem struct {
+type Item struct {
 	XMLName     xml.Name `xml:"item"`
 	Title       string   `xml:"title"`
 	Link        string   `xml:"link"`
 	Description string   `xml:"description"`
 }
 
-func (cht *ChannelTime) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
-	var timexpr string
-	err := d.DecodeElement(&timexpr, &start)
+func (cht *Time) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+	var timeExpr string
+	err := d.DecodeElement(&timeExpr, &start)
 	if err != nil {
 		return err
 	}
-	parse, err := time.Parse(time.RFC1123, timexpr)
+	parse, err := time.Parse(time.RFC1123, timeExpr)
 	if err != nil {
 		return err
 	}
@@ -106,7 +105,7 @@ func (src Source) Fetch() (*Channel, error) {
 	return channel, nil
 }
 
-func (src Source) FetchNews() ([]*news.Extract, error) {
+func (src Source) FetchNews() ([]*news.Preview, error) {
 	ch, err := src.Fetch()
 
 	if err != nil {
@@ -120,19 +119,17 @@ func (src Source) FetchNews() ([]*news.Extract, error) {
 		Language:    ch.Language,
 	}
 
-	extracts := make([]*news.Extract, len(ch.Items))
+	extracts := make([]*news.Preview, len(ch.Items))
 
 	for i, item := range ch.Items {
-		ext := news.Extract{
+		ext := news.Preview{
 			Title:       item.Title,
 			Link:        item.Link,
 			Description: item.Description,
 			Source:      &extSource,
 		}
-
 		extracts[i] = &ext
 	}
-
 	return extracts, nil
 }
 
