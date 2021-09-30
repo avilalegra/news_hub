@@ -31,12 +31,11 @@ func TestUpdate(t *testing.T) {
 	}
 }
 
-func TestAddNews(t *testing.T) {
-	for i, tData := range extracts {
-		Add(tData)
-		all := All()
+func TestLoad(t *testing.T) {
+	Load(previews...)
+	all := All()
+	for _, tData := range previews {
 		assert.Contains(t, all, tData)
-		assert.Equal(t, i+1, len(all))
 	}
 }
 
@@ -46,14 +45,14 @@ var updateTestData = []struct {
 	previews []Preview
 }{
 	{
-		provider: makeNewsProviderMock(extracts[0:2]),
+		provider: makeNewsProviderMock(previews[0:2]),
 		count:    2,
-		previews: extracts[0:2],
+		previews: previews[0:2],
 	},
 	{
-		provider: makeNewsProviderMock(extracts[2:]),
+		provider: makeNewsProviderMock(previews[2:]),
 		count:    2,
-		previews: extracts[2:],
+		previews: previews[2:],
 	},
 }
 
@@ -71,7 +70,7 @@ var sources = map[string]*Source{
 	},
 }
 
-var extracts = []Preview{
+var previews = []Preview{
 	{
 		Title:       `AMD Posts Code Enabling "Cyan Skillfish" Display Support Due To Different DCN2 Variant`,
 		Link:        `https://www.phoronix.com/scan.php?page=news_item&px=AMD-Cyan-Skillfish-DCN-2.01`,
