@@ -1,5 +1,12 @@
 package news
 
+import (
+	"github.com/grokify/html-strip-tags-go"
+	"html"
+	"regexp"
+	"strings"
+)
+
 type Source struct {
 	Title       string
 	Link        string
@@ -55,4 +62,20 @@ func Load(preview ...Preview) {
 
 func All() []Preview {
 	return register
+}
+
+func Search(keywords string) []*Preview {
+	var matches []*Preview
+	words := strings.Fields(keywords)
+	for i, w := range words {
+		words[i] = strings.ToLower(strings.Trim(w, ",.;"))
+	}
+	regx := regexp.MustCompile(strings.Join(words, " .*"))
+	for _, p := range register {
+		haystack := strip.StripTags(strings.ToLower(html.UnescapeString(p.Title + " " + p.Description)))
+		if regx.MatchString(haystack) {
+			matches = append(matches, &p)
+		}
+	}
+	return matches
 }

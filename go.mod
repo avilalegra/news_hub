@@ -2,7 +2,10 @@ module avilego.me/news_hub
 
 go 1.17
 
-require github.com/stretchr/testify v1.7.0
+require (
+	github.com/grokify/html-strip-tags-go v0.0.1
+	github.com/stretchr/testify v1.7.0
+)
 
 require (
 	github.com/davecgh/go-spew v1.1.0 // indirect
