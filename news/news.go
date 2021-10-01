@@ -1,10 +1,12 @@
 package news
 
 import (
-	"github.com/grokify/html-strip-tags-go"
 	"html"
 	"regexp"
 	"strings"
+	"time"
+
+	strip "github.com/grokify/html-strip-tags-go"
 )
 
 type Source struct {
@@ -64,6 +66,10 @@ func All() []Preview {
 	return register
 }
 
+func ClearAll() {
+	register = nil
+}
+
 func Search(keywords string) []*Preview {
 	var matches []*Preview
 	words := strings.Fields(keywords)
@@ -78,4 +84,29 @@ func Search(keywords string) []*Preview {
 		}
 	}
 	return matches
+}
+
+type Watcher struct {
+	Providers []Provider
+}
+
+func (w Watcher) Start(trigger <-chan time.Time, result chan<- UpdateResult) {
+	go func() {
+		for range trigger {
+			c, e := Update(w.Providers...)
+			result <- UpdateResult{c, e}
+		}
+	}()
+}
+
+/*
+func WatchUpdates(trigger <-chan time.Time, result chan<- UpdateResult) {
+	//ticker := time.NewTicker(500 * time.Millisecond)
+}
+
+*/
+
+type UpdateResult struct {
+	count  int
+	errors []error
 }
