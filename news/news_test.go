@@ -66,6 +66,22 @@ func TestWatchUpdatesTrigger(t *testing.T) {
 	assert.Equal(t, result.count, 4)
 }
 
+func TestWatcherStop(t *testing.T) {
+	ClearAll()
+	triggerChan := make(chan time.Time, 1)
+	resultChan := make(chan UpdateResult)
+	watcher := NewWatcher([]Provider{makeNewsProviderMock(previews)})
+	watcher.Start(triggerChan, resultChan)
+	watcher.Stop()
+	triggerChan <- time.Now()
+	select {
+	case <-resultChan:
+		assert.Fail(t, "Watcher is still running")
+	default:
+		assert.True(t, true)
+	}
+}
+
 var searchTestData = []struct {
 	keywords string
 	count    int
