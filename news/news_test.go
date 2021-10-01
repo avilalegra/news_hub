@@ -53,9 +53,8 @@ func TestSearch(t *testing.T) {
 func TestWatchUpdatesTrigger(t *testing.T) {
 	ClearAll()
 	triggerChan := make(chan time.Time)
-	resultChan := make(chan UpdateResult)
 	watcher := NewWatcher([]Provider{makeNewsProviderMock(previews)})
-	watcher.Start(triggerChan, resultChan)
+	resultChan := watcher.Start(triggerChan)
 	triggerChan <- time.Now()
 	result := <-resultChan
 	assert.True(t, watcher.IsRunning)
@@ -66,9 +65,8 @@ func TestWatchUpdatesTrigger(t *testing.T) {
 func TestWatcherStop(t *testing.T) {
 	ClearAll()
 	triggerChan := make(chan time.Time, 1)
-	resultChan := make(chan UpdateResult)
 	watcher := NewWatcher([]Provider{makeNewsProviderMock(previews)})
-	watcher.Start(triggerChan, resultChan)
+	resultChan := watcher.Start(triggerChan)
 	watcher.Stop()
 	triggerChan <- time.Now()
 	select {
