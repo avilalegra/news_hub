@@ -58,6 +58,7 @@ func TestWatchUpdatesTrigger(t *testing.T) {
 	watcher.Start(triggerChan, resultChan)
 	triggerChan <- time.Now()
 	result := <-resultChan
+	assert.True(t, watcher.IsRunning)
 	assert.Equal(t, result.count, 4)
 	watcher.Stop()
 }
@@ -74,7 +75,7 @@ func TestWatcherStop(t *testing.T) {
 	case <-resultChan:
 		assert.Fail(t, "Watcher is still running")
 	default:
-		assert.True(t, true)
+		assert.False(t, watcher.IsRunning)
 	}
 }
 

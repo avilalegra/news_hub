@@ -90,15 +90,18 @@ func NewWatcher(providers []Provider) *Watcher {
 	return &Watcher{
 		providers,
 		make(chan bool),
+		false,
 	}
 }
 
 type Watcher struct {
 	Providers []Provider
 	quit      chan bool
+	IsRunning bool
 }
 
-func (w Watcher) Start(trigger <-chan time.Time, result chan<- UpdateResult) {
+func (w *Watcher) Start(trigger <-chan time.Time, result chan<- UpdateResult) {
+	w.IsRunning = true
 	go func() {
 		for {
 			select {
@@ -106,22 +109,16 @@ func (w Watcher) Start(trigger <-chan time.Time, result chan<- UpdateResult) {
 				c, e := Update(w.Providers...)
 				result <- UpdateResult{c, e}
 			case <-w.quit:
+				w.IsRunning = false
 				return
 			}
 		}
 	}()
 }
 
-func (w Watcher) Stop() {
+func (w *Watcher) Stop() {
 	w.quit <- true
 }
-
-/*
-func WatchUpdates(trigger <-chan time.Time, result chan<- UpdateResult) {
-	//ticker := time.NewTicker(500 * time.Millisecond)
-}
-
-*/
 
 type UpdateResult struct {
 	count  int
