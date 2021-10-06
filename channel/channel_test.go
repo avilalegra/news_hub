@@ -9,7 +9,7 @@ import (
 )
 
 func TestRssParsing(t *testing.T) {
-	for _, tdata := range rssParsingTests {
+	for _, tdata := range channelTests {
 		actchan, _ := Parse([]byte(tdata.xml))
 		expchan := tdata.channel
 
@@ -52,18 +52,14 @@ func (m *ContentFetcherMock) Get(url string) ([]byte, error) {
 }
 
 func TestRssFetch(t *testing.T) {
-	cfmock := new(ContentFetcherMock)
-	for _, tdata := range rssParsingTests {
-		cfmock.On("Get", tdata.channel.Link).Return([]byte(tdata.xml), nil)
-		source := Source{Url: tdata.channel.Link, ContentFetcher: cfmock}
+	for _, source := range mockedSources() {
 		channel, _ := source.Fetch()
-
 		assert.NotNil(t, channel)
 	}
 }
 
 func TestNewsProvider(t *testing.T) {
-	tdata := rssParsingTests[3]
+	tdata := channelTests[3]
 	mksource := newMockedSource(tdata.channel.Link, tdata.xml)
 
 	fnews, _ := mksource.FetchNews()
@@ -82,12 +78,20 @@ func newMockedSource(link string, xmlText string) Source {
 
 }
 
+func mockedSources() []Source {
+	sources := make([]Source, len(channelTests))
+	for i, tdata := range channelTests {
+		sources[i] = newMockedSource(tdata.channel.Link, tdata.xml)
+	}
+	return sources
+}
+
 func parseTime(timeExpr string) *time.Time {
 	ptime, _ := time.Parse(time.RFC1123, timeExpr)
 	return &ptime
 }
 
-var rssParsingTests = []struct {
+var channelTests = []struct {
 	xml     string
 	channel Channel
 }{
