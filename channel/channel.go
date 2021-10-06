@@ -1,12 +1,13 @@
 package channel
 
 import (
-	"avilego.me/news_hub/news"
 	"bytes"
 	"encoding/xml"
 	"io"
 	"net/http"
 	"time"
+
+	"avilego.me/news_hub/news"
 )
 
 type rss struct {

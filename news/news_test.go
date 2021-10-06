@@ -2,36 +2,9 @@ package news
 
 import (
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 )
-
-type ProviderMock struct {
-	mock.Mock
-}
-
-func (m *ProviderMock) FetchNews() ([]Preview, error) {
-	args := m.Called()
-	return args.Get(0).([]Preview), args.Error(1)
-}
-
-func makeNewsProviderMock(extracts []Preview) Provider {
-	provMock := new(ProviderMock)
-	provMock.On("FetchNews").Return(extracts, nil)
-	return provMock
-}
-
-func TestUpdate(t *testing.T) {
-	for _, tData := range updateTestData {
-		c, _ := Update(tData.provider...)
-		assert.Equal(t, tData.count, c)
-		for _, tPreview := range tData.previews {
-			assert.Contains(t, register, tPreview)
-		}
-	}
-}
 
 func TestLoad(t *testing.T) {
 	Load(previews...)
@@ -47,33 +20,6 @@ func TestSearch(t *testing.T) {
 	for _, tData := range searchTestData {
 		results := Search(tData.keywords)
 		assert.Equal(t, tData.count, len(results), tData.keywords)
-	}
-}
-
-func TestWatchUpdatesTrigger(t *testing.T) {
-	ClearAll()
-	triggerChan := make(chan time.Time)
-	watcher := NewWatcher([]Provider{makeNewsProviderMock(previews)})
-	resultChan := watcher.Start(triggerChan)
-	triggerChan <- time.Now()
-	result := <-resultChan
-	assert.True(t, watcher.IsRunning)
-	assert.Equal(t, result.count, 4)
-	watcher.Stop()
-}
-
-func TestWatcherStop(t *testing.T) {
-	ClearAll()
-	triggerChan := make(chan time.Time, 1)
-	watcher := NewWatcher([]Provider{makeNewsProviderMock(previews)})
-	resultChan := watcher.Start(triggerChan)
-	watcher.Stop()
-	triggerChan <- time.Now()
-	select {
-	case <-resultChan:
-		assert.Fail(t, "Watcher is still running")
-	default:
-		assert.False(t, watcher.IsRunning)
 	}
 }
 
@@ -112,28 +58,6 @@ var searchTestData = []struct {
 	{
 		"linux kernel covid",
 		0,
-	},
-}
-
-var updateTestData = []struct {
-	provider []Provider
-	count    int
-	previews []Preview
-}{
-	{
-		provider: []Provider{makeNewsProviderMock(previews[0:2])},
-		count:    2,
-		previews: previews[0:2],
-	},
-	{
-		provider: []Provider{makeNewsProviderMock(previews[2:])},
-		count:    2,
-		previews: previews[2:],
-	},
-	{
-		provider: []Provider{},
-		count:    0,
-		previews: []Preview{},
 	},
 }
 
