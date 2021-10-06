@@ -1,11 +1,10 @@
 package channel
 
 import (
-	"testing"
-	"time"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"testing"
+	"time"
 )
 
 func TestRssParsing(t *testing.T) {
