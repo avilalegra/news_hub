@@ -64,14 +64,14 @@ func TestGetChannelNews(t *testing.T) {
 }
 
 func newMockedSource(link string, cfResponse interface{}) Source {
-	cfmock := new(ContentFetcherMock)
+	client := new(HttpClientMock)
 	switch v := cfResponse.(type) {
 	case error:
-		cfmock.On("Get", link).Return([]byte(""), v)
+		client.On("Get", link).Return([]byte(""), v)
 	case string:
-		cfmock.On("Get", link).Return([]byte(v), nil)
+		client.On("Get", link).Return([]byte(v), nil)
 	}
-	return Source{Url: link, ContentFetcher: cfmock}
+	return Source{Url: link, HttpClient: client}
 }
 
 func assertChannelEquals(t *testing.T, expected Channel, actual Channel) {
@@ -88,11 +88,11 @@ func assertChannelEquals(t *testing.T, expected Channel, actual Channel) {
 	}
 }
 
-type ContentFetcherMock struct {
+type HttpClientMock struct {
 	mock.Mock
 }
 
-func (m *ContentFetcherMock) Get(url string) ([]byte, error) {
+func (m *HttpClientMock) Get(url string) ([]byte, error) {
 	args := m.Called(url)
 	return args.Get(0).([]byte), args.Error(1)
 }

@@ -84,18 +84,18 @@ func Parse(xmlText []byte) (*Channel, error) {
 
 func NewSource(url string) *Source {
 	return &Source{
-		Url:            url,
-		ContentFetcher: DefaultContentFetcher{},
+		Url:        url,
+		HttpClient: DefaultHttpClient{},
 	}
 }
 
 type Source struct {
-	Url            string
-	ContentFetcher ContentFetcher
+	Url        string
+	HttpClient HttpClient
 }
 
 func (src Source) Fetch() (*Channel, error) {
-	xmlText, err := src.ContentFetcher.Get(src.Url)
+	xmlText, err := src.HttpClient.Get(src.Url)
 	if err != nil {
 		return nil, err
 	}
@@ -129,13 +129,13 @@ func (ch Channel) GetNews() []news.Preview {
 	return previews
 }
 
-type ContentFetcher interface {
+type HttpClient interface {
 	Get(url string) ([]byte, error)
 }
 
-type DefaultContentFetcher struct{}
+type DefaultHttpClient struct{}
 
-func (f DefaultContentFetcher) Get(url string) ([]byte, error) {
+func (f DefaultHttpClient) Get(url string) ([]byte, error) {
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err
