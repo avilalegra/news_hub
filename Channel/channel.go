@@ -3,6 +3,8 @@ package channel
 import (
 	"bytes"
 	"encoding/xml"
+	"io"
+	"net/http"
 	"time"
 )
 
@@ -82,4 +84,56 @@ func Parse(xmlText []byte) (*Channel, error) {
 	}
 
 	return &rss.Channel, err
+}
+
+func NewSource(url string) *Source {
+	return &Source{
+		Url:            url,
+		ContentFetcher: DefaultContentFetcher{},
+	}
+}
+
+type Source struct {
+	Url            string
+	ContentFetcher ContentFetcher
+}
+
+func (src Source) Fetch() (*Channel, error) {
+	xmlText, err := src.ContentFetcher.Get(src.Url)
+
+	if err != nil {
+		return nil, err
+	}
+
+	channel, err := Parse(xmlText)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return channel, nil
+}
+
+type ContentFetcher interface {
+	Get(url string) ([]byte, error)
+}
+
+type DefaultContentFetcher struct{}
+
+func (f DefaultContentFetcher) Get(url string) ([]byte, error) {
+
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return body, nil
 }

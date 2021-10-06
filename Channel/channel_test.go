@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 func parseTime(timeExpr string) *time.Time {
@@ -120,4 +121,30 @@ func TestParsingRssThrowsErrorOnInvalidXml(t *testing.T) {
 		_, err := Parse([]byte(xmlText))
 		assert.Error(t, err)
 	}
+}
+
+type ContentFetcherMock struct {
+	mock.Mock
+}
+
+func (m *ContentFetcherMock) Get(url string) ([]byte, error) {
+	args := m.Called(url)
+	return args.Get(0).([]byte), args.Error(1)
+}
+
+func TestRssFetch(t *testing.T) {
+
+	mock := new(ContentFetcherMock)
+
+	mock.On("Get", "https://www.phoronix.com/").Return([]byte(`<rss version="2.0"><channel><title>Phoronix</title><link>https://www.phoronix.com/</link><description><![CDATA[Linux Hardware Reviews & News]]></description></channel></rss>`), nil)
+
+	source := Source{
+		Url:            "https://www.phoronix.com/",
+		ContentFetcher: mock,
+	}
+
+	channel, _ := source.Fetch()
+
+	assert.NotNil(t, channel)
+
 }
