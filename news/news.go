@@ -100,20 +100,22 @@ type Watcher struct {
 	IsRunning bool
 }
 
-func (w *Watcher) Start(trigger <-chan time.Time, result chan<- UpdateResult) {
+func (w *Watcher) Start(trigger <-chan time.Time) <-chan UpdateResult {
 	w.IsRunning = true
+	resultChan := make(chan UpdateResult)
 	go func() {
 		for {
 			select {
 			case <-trigger:
 				c, e := Update(w.Providers...)
-				result <- UpdateResult{c, e}
+				resultChan <- UpdateResult{c, e}
 			case <-w.quit:
 				w.IsRunning = false
 				return
 			}
 		}
 	}()
+	return resultChan
 }
 
 func (w *Watcher) Stop() {
