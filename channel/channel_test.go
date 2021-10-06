@@ -1,11 +1,10 @@
 package channel
 
 import (
-	"testing"
-	"time"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"testing"
+	"time"
 )
 
 func TestRssParsing(t *testing.T) {
@@ -110,7 +109,7 @@ var channelTests = []struct {
 			Link:          `https://www.nytimes.com`,
 			Description:   `NYT channel description`,
 			Language:      "en-us",
-			LastBuildDate: ChannelTime{Time: parseTime(`Sun, 19 Sep 2021 06:27:36 +0000`)},
+			LastBuildDate: Time{Time: parseTime(`Sun, 19 Sep 2021 06:27:36 +0000`)},
 		},
 	},
 	{
@@ -120,7 +119,7 @@ var channelTests = []struct {
 			Link:          `https://www.cnn.com/world/index.html`,
 			Language:      `en-US`,
 			Description:   `CNN.com delivers up-to-the-minute news and information on the latest top stories, weather, entertainment, politics and more.`,
-			LastBuildDate: ChannelTime{Time: parseTime(`Mon, 27 Sep 2021 13:54:35 GMT`)},
+			LastBuildDate: Time{Time: parseTime(`Mon, 27 Sep 2021 13:54:35 GMT`)},
 		},
 	},
 	{
@@ -130,7 +129,7 @@ var channelTests = []struct {
 			Link:        `https://www.phoronix.com/`,
 			Description: `Linux Hardware Reviews & News`,
 			Language:    "en-us",
-			Items: []ChannelItem{
+			Items: []Item{
 				{
 					Title:       `AMD Posts Code Enabling "Cyan Skillfish" Display Support Due To Different DCN2 Variant`,
 					Link:        `https://www.phoronix.com/scan.php?page=news_item&px=AMD-Cyan-Skillfish-DCN-2.01`,
@@ -150,7 +149,7 @@ var channelTests = []struct {
 			Title:       `Noticias en rtve.es`,
 			Link:        `http://www.rtve.es`,
 			Description: `RSS Tags`,
-			Items: []ChannelItem{
+			Items: []Item{
 				{
 					Title:       `Erupción en La Palma, en directo | La lava llega a 800 metros del mar y cambia de dirección al norte`,
 					Link:        `http://www.rtve.es/noticias/20210928/erupcion-palma-directo-lava-llega-800-metros-del-mar-cambia-direccion-norte/2175602.shtml`,
