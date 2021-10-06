@@ -1,11 +1,10 @@
 package news
 
 import (
+	strip "github.com/grokify/html-strip-tags-go"
 	"html"
 	"regexp"
 	"strings"
-
-	strip "github.com/grokify/html-strip-tags-go"
 )
 
 type Source struct {
@@ -22,20 +21,6 @@ type Preview struct {
 	Source      *Source
 }
 
-var register []Preview
-
-func Load(preview ...Preview) {
-	register = preview
-}
-
-func All() []Preview {
-	return register
-}
-
-func ClearAll() {
-	register = nil
-}
-
 func Search(keywords string) []*Preview {
 	var matches []*Preview
 	words := strings.Fields(keywords)
@@ -50,4 +35,18 @@ func Search(keywords string) []*Preview {
 		}
 	}
 	return matches
+}
+
+var register []Preview
+
+func Load(preview ...Preview) {
+	register = preview
+}
+
+func All() []Preview {
+	return register
+}
+
+type Provider interface {
+	Run(chan<- Preview)
 }

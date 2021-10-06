@@ -1,14 +1,56 @@
 package channel
 
 import (
+	"avilego.me/news_hub/news"
 	"bytes"
 	"encoding/xml"
 	"io"
 	"net/http"
 	"time"
-
-	"avilego.me/news_hub/news"
 )
+
+type Source struct {
+	Url        string
+	HttpClient HttpClient
+}
+
+func (src Source) Fetch() (*Channel, error) {
+	xmlText, err := src.HttpClient.Get(src.Url)
+	if err != nil {
+		return nil, err
+	}
+	channel, err := Parse(xmlText)
+	if err != nil {
+		return nil, err
+	}
+	return channel, nil
+}
+
+func NewSource(url string) *Source {
+	return &Source{
+		Url:        url,
+		HttpClient: DefaultHttpClient{},
+	}
+}
+
+type HttpClient interface {
+	Get(url string) ([]byte, error)
+}
+
+type DefaultHttpClient struct{}
+
+func (f DefaultHttpClient) Get(url string) ([]byte, error) {
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	return body, nil
+}
 
 type rss struct {
 	XMLName xml.Name `xml:"rss"`
@@ -24,6 +66,39 @@ type Channel struct {
 	Language      string   `xml:"language"`
 	LastBuildDate Time     `xml:"lastBuildDate"`
 	Items         []Item   `xml:"item"`
+}
+
+func (ch Channel) GetNews() []news.Preview {
+	extSource := news.Source{
+		Title:       ch.Title,
+		Link:        ch.Link,
+		Description: ch.Description,
+		Language:    ch.Language,
+	}
+
+	previews := make([]news.Preview, len(ch.Items))
+
+	for i, item := range ch.Items {
+		ext := news.Preview{
+			Title:       item.Title,
+			Link:        item.Link,
+			Description: item.Description,
+			Source:      &extSource,
+		}
+		previews[i] = ext
+	}
+
+	return previews
+}
+
+func Parse(xmlText []byte) (*Channel, error) {
+	var rss rss
+	dec := xml.NewTokenDecoder(newTokenReader(xmlText))
+	err := dec.Decode(&rss)
+	if err != nil {
+		return nil, err
+	}
+	return &rss.Channel, err
 }
 
 type Time struct {
@@ -70,80 +145,4 @@ func newTokenReader(xmlText []byte) xml.TokenReader {
 	//so it doesn't collision with ex. "atom:link"
 	baseDecoder.DefaultSpace = "_"
 	return Trimmer{baseDecoder}
-}
-
-func Parse(xmlText []byte) (*Channel, error) {
-	var rss rss
-	dec := xml.NewTokenDecoder(newTokenReader(xmlText))
-	err := dec.Decode(&rss)
-	if err != nil {
-		return nil, err
-	}
-	return &rss.Channel, err
-}
-
-func NewSource(url string) *Source {
-	return &Source{
-		Url:        url,
-		HttpClient: DefaultHttpClient{},
-	}
-}
-
-type Source struct {
-	Url        string
-	HttpClient HttpClient
-}
-
-func (src Source) Fetch() (*Channel, error) {
-	xmlText, err := src.HttpClient.Get(src.Url)
-	if err != nil {
-		return nil, err
-	}
-	channel, err := Parse(xmlText)
-	if err != nil {
-		return nil, err
-	}
-	return channel, nil
-}
-
-func (ch Channel) GetNews() []news.Preview {
-	extSource := news.Source{
-		Title:       ch.Title,
-		Link:        ch.Link,
-		Description: ch.Description,
-		Language:    ch.Language,
-	}
-
-	previews := make([]news.Preview, len(ch.Items))
-
-	for i, item := range ch.Items {
-		ext := news.Preview{
-			Title:       item.Title,
-			Link:        item.Link,
-			Description: item.Description,
-			Source:      &extSource,
-		}
-		previews[i] = ext
-	}
-
-	return previews
-}
-
-type HttpClient interface {
-	Get(url string) ([]byte, error)
-}
-
-type DefaultHttpClient struct{}
-
-func (f DefaultHttpClient) Get(url string) ([]byte, error) {
-	resp, err := http.Get(url)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	return body, nil
 }
