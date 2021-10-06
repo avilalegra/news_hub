@@ -2,7 +2,14 @@ package channel
 
 import (
 	"encoding/xml"
+	"time"
 )
+
+type rss struct {
+	XMLName xml.Name `xml:"rss"`
+	Version string   `xml:"version,attr"`
+	Channel Channel  `xml:"channel"`
+}
 
 type Channel struct {
 	XMLName     xml.Name `xml:"channel"`
@@ -11,10 +18,23 @@ type Channel struct {
 	Description string   `xml:"description"`
 }
 
-type rss struct {
-	XMLName xml.Name `xml:"rss"`
-	Version string   `xml:"version,attr"`
-	Channel Channel  `xml:"channel"`
+type ChannelTime struct {
+	*time.Time
+}
+
+func (cht *ChannelTime) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+
+	var timexpr string
+
+	d.DecodeElement(&timexpr, &start)
+	parse, err := time.Parse(time.RFC1123Z, timexpr)
+	if err != nil {
+		return err
+	}
+
+	cht.Time = &parse
+
+	return nil
 }
 
 func Parse(xmlText []byte) (*Channel, error) {

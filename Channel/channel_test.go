@@ -2,15 +2,23 @@ package channel
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
+
+func parseTime(timeExpr string) *time.Time {
+	ptime, _ := time.Parse(time.RFC1123Z, timeExpr)
+	return &ptime
+}
 
 var rssParsingTests = []struct {
 	xml     string
 	channel Channel
 }{
-	{`<?xml version="1.0" encoding="UTF-8"?><rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:media="http://search.yahoo.com/mrss/" xmlns:nyt="http://www.nytimes.com/namespaces/rss/2.0" version="2.0"><channel><title>NYT &gt; Top Stories</title><link>https://www.nytimes.com</link><description>NYT channel description</description></channel></rss>`,
+
+	{
+		`<?xml version="1.0" encoding="UTF-8"?><rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:media="http://search.yahoo.com/mrss/" xmlns:nyt="http://www.nytimes.com/namespaces/rss/2.0" version="2.0"><channel><title>NYT &gt; Top Stories</title><link>https://www.nytimes.com</link><description>NYT channel description</description><language>en-us</language><lastBuildDate>Sun, 19 Sep 2021 06:27:36 +0000</lastBuildDate><image><title>NYT > Top Stories</title><url>https://static01.nyt.com/images/misc/NYT_logo_rss_250x40.png</url><link>https://www.nytimes.com</link></image></channel></rss>`,
 		Channel{
 			Title:       `NYT > Top Stories`,
 			Link:        `https://www.nytimes.com`,
@@ -21,13 +29,11 @@ var rssParsingTests = []struct {
 
 func TestRssParsing(t *testing.T) {
 	for _, tt := range rssParsingTests {
-		t.Run(tt.channel.Title, func(t *testing.T) {
-			channel, _ := Parse([]byte(tt.xml))
-			t.Parallel()
-			assert.Equal(t, tt.channel.Title, channel.Title)
-			assert.Equal(t, tt.channel.Link, channel.Link)
-			assert.Equal(t, tt.channel.Description, channel.Description)
-		})
+		channel, _ := Parse([]byte(tt.xml))
+
+		assert.Equal(t, tt.channel.Title, channel.Title)
+		assert.Equal(t, tt.channel.Link, channel.Link)
+		assert.Equal(t, tt.channel.Description, channel.Description)
 	}
 }
 
