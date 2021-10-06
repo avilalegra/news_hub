@@ -52,18 +52,14 @@ func TestSearch(t *testing.T) {
 
 func TestWatchUpdatesTrigger(t *testing.T) {
 	ClearAll()
-
 	triggerChan := make(chan time.Time)
 	resultChan := make(chan UpdateResult)
-
-	watcher := Watcher{Providers: []Provider{makeNewsProviderMock(previews)}}
-
+	watcher := NewWatcher([]Provider{makeNewsProviderMock(previews)})
 	watcher.Start(triggerChan, resultChan)
-
 	triggerChan <- time.Now()
 	result := <-resultChan
-
 	assert.Equal(t, result.count, 4)
+	watcher.Stop()
 }
 
 func TestWatcherStop(t *testing.T) {
