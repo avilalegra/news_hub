@@ -12,10 +12,12 @@ type rss struct {
 }
 
 type Channel struct {
-	XMLName     xml.Name `xml:"channel"`
-	Title       string   `xml:"title"`
-	Link        string   `xml:"link"`
-	Description string   `xml:"description"`
+	XMLName       xml.Name    `xml:"channel"`
+	Title         string      `xml:"title"`
+	Link          string      `xml:"link"`
+	Description   string      `xml:"description"`
+	Language      string      `xml:"language"`
+	LastBuildDate ChannelTime `xml:"lastBuildDate"`
 }
 
 type ChannelTime struct {
