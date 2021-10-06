@@ -36,15 +36,15 @@ type ChannelItem struct {
 }
 
 func (cht *ChannelTime) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
-
 	var timexpr string
-
-	d.DecodeElement(&timexpr, &start)
+	err := d.DecodeElement(&timexpr, &start)
+	if err != nil {
+		return err
+	}
 	parse, err := time.Parse(time.RFC1123, timexpr)
 	if err != nil {
 		return err
 	}
-
 	cht.Time = &parse
 
 	return nil
