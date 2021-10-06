@@ -86,17 +86,34 @@ func Search(keywords string) []*Preview {
 	return matches
 }
 
+func NewWatcher(providers []Provider) *Watcher {
+	return &Watcher{
+		providers,
+		make(chan bool),
+	}
+}
+
 type Watcher struct {
 	Providers []Provider
+	quit      chan bool
 }
 
 func (w Watcher) Start(trigger <-chan time.Time, result chan<- UpdateResult) {
 	go func() {
-		for range trigger {
-			c, e := Update(w.Providers...)
-			result <- UpdateResult{c, e}
+		for {
+			select {
+			case <-trigger:
+				c, e := Update(w.Providers...)
+				result <- UpdateResult{c, e}
+			case <-w.quit:
+				return
+			}
 		}
 	}()
+}
+
+func (w Watcher) Stop() {
+	w.quit <- true
 }
 
 /*
