@@ -134,6 +134,29 @@ func (src Source) FetchNews() ([]*news.Preview, error) {
 	return extracts, nil
 }
 
+func (ch Channel) GetNews() []news.Preview {
+	extSource := news.Source{
+		Title:       ch.Title,
+		Link:        ch.Link,
+		Description: ch.Description,
+		Language:    ch.Language,
+	}
+
+	previews := make([]news.Preview, len(ch.Items))
+
+	for i, item := range ch.Items {
+		ext := news.Preview{
+			Title:       item.Title,
+			Link:        item.Link,
+			Description: item.Description,
+			Source:      &extSource,
+		}
+		previews[i] = ext
+	}
+
+	return previews
+}
+
 type ContentFetcher interface {
 	Get(url string) ([]byte, error)
 }
