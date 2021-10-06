@@ -49,8 +49,8 @@ func Update(providers ...Provider) (int, []error) {
 	return len(recentNews), errors
 }
 
-func Add(preview Preview) {
-	register = append(register, preview)
+func Load(preview ...Preview) {
+	register = preview
 }
 
 func All() []Preview {
