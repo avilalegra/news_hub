@@ -8,7 +8,7 @@ import (
 )
 
 func parseTime(timeExpr string) *time.Time {
-	ptime, _ := time.Parse(time.RFC1123Z, timeExpr)
+	ptime, _ := time.Parse(time.RFC1123, timeExpr)
 	return &ptime
 }
 
@@ -33,17 +33,27 @@ var rssParsingTests = []struct {
 			LastBuildDate: ChannelTime{Time: parseTime(`Sun, 19 Sep 2021 06:27:36 +0000`)},
 		},
 	},
+	{
+		`<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/" xmlns:feedburner="http://rssnamespace.org/feedburner/ext/1.0" version="2.0"><channel><title><![CDATA[CNN.com - RSS Channel - World]]></title><description><![CDATA[CNN.com delivers up-to-the-minute news and information on the latest top stories, weather, entertainment, politics and more.]]></description><link>https://www.cnn.com/world/index.html</link><image><url>http://i2.cdn.turner.com/cnn/2015/images/09/24/cnn.digital.png</url><title>CNN.com - RSS Channel - World</title><link>https://www.cnn.com/world/index.html</link></image><lastBuildDate>Mon, 27 Sep 2021 13:54:35 GMT</lastBuildDate><pubDate>Thu, 16 Sep 2021 15:14:25 GMT</pubDate><language><![CDATA[en-US]]></language><atom10:link xmlns:atom10="http://www.w3.org/2005/Atom" rel="self" type="application/rss+xml" href="http://rss.cnn.com/rss/edition_world" /></channel></rss>`,
+		Channel{
+			Title:         `CNN.com - RSS Channel - World`,
+			Link:          `https://www.cnn.com/world/index.html`,
+			Language:      `en-US`,
+			Description:   `CNN.com delivers up-to-the-minute news and information on the latest top stories, weather, entertainment, politics and more.`,
+			LastBuildDate: ChannelTime{Time: parseTime(`Mon, 27 Sep 2021 13:54:35 GMT`)},
+		},
+	},
 }
 
 func TestRssParsing(t *testing.T) {
 	for _, tt := range rssParsingTests {
 		channel, _ := Parse([]byte(tt.xml))
 
-		assert.Equal(t, tt.channel.Title, channel.Title)
-		assert.Equal(t, tt.channel.Link, channel.Link)
-		assert.Equal(t, tt.channel.Description, channel.Description)
-		assert.Equal(t, tt.channel.Language, channel.Language)
-		assert.Equal(t, tt.channel.LastBuildDate, channel.LastBuildDate)
+		assert.Equal(t, tt.channel.Title, channel.Title, "Title parsing error")
+		assert.Equal(t, tt.channel.Link, channel.Link, "Link parsing error")
+		assert.Equal(t, tt.channel.Description, channel.Description, "Description parsing error")
+		assert.Equal(t, tt.channel.Language, channel.Language, "Language parsing error")
+		assert.Equal(t, tt.channel.LastBuildDate, channel.LastBuildDate, "LastBuildDate parsing error")
 	}
 }
 
