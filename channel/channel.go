@@ -106,34 +106,6 @@ func (src Source) Fetch() (*Channel, error) {
 	return channel, nil
 }
 
-func (src Source) FetchNews() ([]*news.Preview, error) {
-	ch, err := src.Fetch()
-
-	if err != nil {
-		return nil, err
-	}
-
-	extSource := news.Source{
-		Title:       ch.Title,
-		Link:        ch.Link,
-		Description: ch.Description,
-		Language:    ch.Language,
-	}
-
-	extracts := make([]*news.Preview, len(ch.Items))
-
-	for i, item := range ch.Items {
-		ext := news.Preview{
-			Title:       item.Title,
-			Link:        item.Link,
-			Description: item.Description,
-			Source:      &extSource,
-		}
-		extracts[i] = &ext
-	}
-	return extracts, nil
-}
-
 func (ch Channel) GetNews() []news.Preview {
 	extSource := news.Source{
 		Title:       ch.Title,

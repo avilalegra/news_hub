@@ -1,6 +1,7 @@
 package channel
 
 import (
+	"errors"
 	"testing"
 	"time"
 
@@ -9,7 +10,7 @@ import (
 )
 
 func TestRssParsing(t *testing.T) {
-	for _, tdata := range channelTests {
+	for _, tdata := range parseChannelTests {
 		actchan, _ := Parse([]byte(tdata.xml))
 		expchan := tdata.channel
 
@@ -27,14 +28,6 @@ func TestRssParsing(t *testing.T) {
 	}
 }
 
-var rssParsingErrorTests = []string{
-	`<?xml version="1.0"?><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://purl.org/rss/1.0/"><channel rdf:about="http://www.xml.com/xml/news.rss"><title>XML.com</title><link>http://xml.com/pub</link><description>rss v1 description
-	</description><image rdf:resource="http://xml.com/universal/images/xml_tiny.gif" /><items><rdf:Seq><rdf:li resource="http://xml.com/pub/2000/08/09/xslt/xslt.html" /><rdf:li resource="http://xml.com/pub/2000/08/09/rdfdb/index.html" /></rdf:Seq></items><textinput rdf:resource="http://search.xml.com" /></channel><image rdf:about="http://xml.com/universal/images/xml_tiny.gif"><title>XML.com</title><link>http://www.xml.com</link><url>http://xml.com/universal/images/xml_tiny.gif</url></image><item rdf:about="http://xml.com/pub/2000/08/09/xslt/xslt.html"><title>Processing Inclusions with XSLT</title><link>http://xml.com/pub/2000/08/09/xslt/xslt.html</link><description>rss description
-	</description></item><item rdf:about="http://xml.com/pub/2000/08/09/rdfdb/index.html"><title>Putting RDF to Work</title><link>http://xml.com/pub/2000/08/09/rdfdb/index.html</link><description>item description</description></item><textinput rdf:about="http://search.xml.com"><title>Search XML.com</title><description>Search XML.com's XML collection</description><name>s</name><link>http://search.xml.com</link></textinput></rdf:RDF>`,
-	`<?xml version="1.0"?><xml></xl>`,
-	``,
-}
-
 func TestParsingRssThrowsErrorOnInvalidXml(t *testing.T) {
 	for _, xmlText := range rssParsingErrorTests {
 		_, err := Parse([]byte(xmlText))
@@ -42,19 +35,16 @@ func TestParsingRssThrowsErrorOnInvalidXml(t *testing.T) {
 	}
 }
 
-type ContentFetcherMock struct {
-	mock.Mock
-}
+func TestFetchChannel(t *testing.T) {
+	for _, tData := range fetchChannelTests {
+		result, e := tData.source.Fetch()
 
-func (m *ContentFetcherMock) Get(url string) ([]byte, error) {
-	args := m.Called(url)
-	return args.Get(0).([]byte), args.Error(1)
-}
-
-func TestRssFetch(t *testing.T) {
-	for _, source := range mockedSources() {
-		channel, _ := source.Fetch()
-		assert.NotNil(t, channel)
+		switch v := tData.result.(type) {
+		case *Channel:
+			assertChannelEquals(t, *v, *result)
+		case error:
+			assert.Error(t, e)
+		}
 	}
 }
 
@@ -73,32 +63,38 @@ func TestGetChannelNews(t *testing.T) {
 	}
 }
 
-func TestNewsProvider(t *testing.T) {
-	tdata := channelTests[3]
-	mksource := newMockedSource(tdata.channel.Link, tdata.xml)
-
-	fnews, _ := mksource.FetchNews()
-
-	assert.Equal(t, len(fnews), 2)
-
-	for _, fn := range fnews {
-		assert.NotNil(t, fn)
-	}
-}
-
-func newMockedSource(link string, xmlText string) Source {
+func newMockedSource(link string, cfResponse interface{}) Source {
 	cfmock := new(ContentFetcherMock)
-	cfmock.On("Get", link).Return([]byte(xmlText), nil)
+	switch v := cfResponse.(type) {
+	case error:
+		cfmock.On("Get", link).Return([]byte(""), v)
+	case string:
+		cfmock.On("Get", link).Return([]byte(v), nil)
+	}
 	return Source{Url: link, ContentFetcher: cfmock}
-
 }
 
-func mockedSources() []Source {
-	sources := make([]Source, len(channelTests))
-	for i, tdata := range channelTests {
-		sources[i] = newMockedSource(tdata.channel.Link, tdata.xml)
+func assertChannelEquals(t *testing.T, expected Channel, actual Channel) {
+	assert.Equal(t, expected.Title, actual.Title, "Title parsing error")
+	assert.Equal(t, expected.Link, actual.Link, "Link parsing error")
+	assert.Equal(t, expected.Description, actual.Description, "Description parsing error")
+	assert.Equal(t, expected.Language, actual.Language, "Language parsing error")
+	assert.Equal(t, expected.LastBuildDate, actual.LastBuildDate, "LastBuildDate parsing error")
+
+	for i, expitem := range expected.Items {
+		assert.Equal(t, expitem.Title, actual.Items[i].Title, "Item title parsing error")
+		assert.Equal(t, expitem.Link, actual.Items[i].Link, "Item link parsing error")
+		assert.Equal(t, expitem.Description, actual.Items[i].Description, "Item description parsing error")
 	}
-	return sources
+}
+
+type ContentFetcherMock struct {
+	mock.Mock
+}
+
+func (m *ContentFetcherMock) Get(url string) ([]byte, error) {
+	args := m.Called(url)
+	return args.Get(0).([]byte), args.Error(1)
 }
 
 func parseTime(timeExpr string) *time.Time {
@@ -106,7 +102,42 @@ func parseTime(timeExpr string) *time.Time {
 	return &ptime
 }
 
-var channelTests = []struct {
+var fetchChannelTests = []struct {
+	source Source
+	result interface{}
+}{
+
+	{
+		newMockedSource(parseChannelTests[0].channel.Link, parseChannelTests[0].xml),
+		parseChannelTests[0],
+	},
+	{
+		newMockedSource(parseChannelTests[1].channel.Link, parseChannelTests[1].xml),
+		parseChannelTests[1],
+	},
+	{
+		newMockedSource(parseChannelTests[2].channel.Link, parseChannelTests[2].xml),
+		parseChannelTests[2],
+	},
+	{
+		newMockedSource(parseChannelTests[3].channel.Link, parseChannelTests[3].xml),
+		parseChannelTests[3],
+	},
+	{
+		newMockedSource(parseChannelTests[4].channel.Link, parseChannelTests[4].xml),
+		parseChannelTests[4],
+	},
+	{
+		newMockedSource("some link", "<xml> invalid rss <xml>"),
+		errors.New("Parsing error"),
+	},
+	{
+		newMockedSource("some link", errors.New("500 http response")),
+		errors.New("500 http response"),
+	},
+}
+
+var parseChannelTests = []struct {
 	xml     string
 	channel Channel
 }{
@@ -217,4 +248,12 @@ var channelNewsTests = []Channel{
 			},
 		},
 	},
+}
+
+var rssParsingErrorTests = []string{
+	`<?xml version="1.0"?><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://purl.org/rss/1.0/"><channel rdf:about="http://www.xml.com/xml/news.rss"><title>XML.com</title><link>http://xml.com/pub</link><description>rss v1 description
+	</description><image rdf:resource="http://xml.com/universal/images/xml_tiny.gif" /><items><rdf:Seq><rdf:li resource="http://xml.com/pub/2000/08/09/xslt/xslt.html" /><rdf:li resource="http://xml.com/pub/2000/08/09/rdfdb/index.html" /></rdf:Seq></items><textinput rdf:resource="http://search.xml.com" /></channel><image rdf:about="http://xml.com/universal/images/xml_tiny.gif"><title>XML.com</title><link>http://www.xml.com</link><url>http://xml.com/universal/images/xml_tiny.gif</url></image><item rdf:about="http://xml.com/pub/2000/08/09/xslt/xslt.html"><title>Processing Inclusions with XSLT</title><link>http://xml.com/pub/2000/08/09/xslt/xslt.html</link><description>rss description
+	</description></item><item rdf:about="http://xml.com/pub/2000/08/09/rdfdb/index.html"><title>Putting RDF to Work</title><link>http://xml.com/pub/2000/08/09/rdfdb/index.html</link><description>item description</description></item><textinput rdf:about="http://search.xml.com"><title>Search XML.com</title><description>Search XML.com's XML collection</description><name>s</name><link>http://search.xml.com</link></textinput></rdf:RDF>`,
+	`<?xml version="1.0"?><xml></xl>`,
+	``,
 }
