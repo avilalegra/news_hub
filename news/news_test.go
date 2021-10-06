@@ -1,9 +1,11 @@
 package news
 
 import (
+	"testing"
+	"time"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"testing"
 )
 
 type ProviderMock struct {
@@ -41,10 +43,27 @@ func TestLoad(t *testing.T) {
 
 func TestSearch(t *testing.T) {
 	Load(previews...)
+	Load(previews...)
 	for _, tData := range searchTestData {
 		results := Search(tData.keywords)
 		assert.Equal(t, tData.count, len(results), tData.keywords)
 	}
+}
+
+func TestWatchUpdatesTrigger(t *testing.T) {
+	ClearAll()
+
+	triggerChan := make(chan time.Time)
+	resultChan := make(chan UpdateResult)
+
+	watcher := Watcher{Providers: []Provider{makeNewsProviderMock(previews)}}
+
+	watcher.Start(triggerChan, resultChan)
+
+	triggerChan <- time.Now()
+	result := <-resultChan
+
+	assert.Equal(t, result.count, 4)
 }
 
 var searchTestData = []struct {
