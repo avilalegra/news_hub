@@ -53,12 +53,13 @@ func (m *ContentFetcherMock) Get(url string) ([]byte, error) {
 
 func TestRssFetch(t *testing.T) {
 	cfmock := new(ContentFetcherMock)
-	cfmock.On("Get", "https://www.phoronix.com/").Return([]byte(rssParsingTests[0].xml), nil)
-	source := Source{Url: "https://www.phoronix.com/", ContentFetcher: cfmock}
+	for _, tdata := range rssParsingTests {
+		cfmock.On("Get", tdata.channel.Link).Return([]byte(tdata.xml), nil)
+		source := Source{Url: tdata.channel.Link, ContentFetcher: cfmock}
+		channel, _ := source.Fetch()
 
-	channel, _ := source.Fetch()
-
-	assert.NotNil(t, channel)
+		assert.NotNil(t, channel)
+	}
 }
 
 func parseTime(timeExpr string) *time.Time {
