@@ -48,5 +48,5 @@ func All() []Preview {
 }
 
 type Provider interface {
-	Run(chan<- Preview)
+	RunAsync(chan<- Preview)
 }
