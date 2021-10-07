@@ -25,14 +25,13 @@ func (p RssNewsProvider) RunAsync(previewsChan chan<- news.Preview) {
 		for range p.interval {
 			for _, source := range p.sources {
 				wg.Add(1)
-				go func(src Source) {
-					channel, err := src.Fetch()
-					if err == nil {
-						for _, preview := range channel.GetNews() {
-							previewsChan <- preview
-						}
+				go func(s Source) {
+					defer wg.Done()
+					previews, _ := s.FetchNews()
+
+					for _, preview := range previews {
+						previewsChan <- preview
 					}
-					wg.Done()
 				}(source)
 			}
 		}

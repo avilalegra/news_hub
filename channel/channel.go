@@ -14,8 +14,8 @@ type Source struct {
 	HttpClient HttpClient
 }
 
-func (src Source) Fetch() (*Channel, error) {
-	xmlText, err := src.HttpClient.Get(src.Url)
+func (s Source) Fetch() (*Channel, error) {
+	xmlText, err := s.HttpClient.Get(s.Url)
 	if err != nil {
 		return nil, err
 	}
@@ -24,6 +24,15 @@ func (src Source) Fetch() (*Channel, error) {
 		return nil, err
 	}
 	return channel, nil
+}
+
+func (s Source) FetchNews() ([]news.Preview, error) {
+	channel, err := s.Fetch()
+	if err != nil {
+		return nil, err
+	}
+
+	return channel.GetNews(), nil
 }
 
 func NewSource(url string) *Source {
