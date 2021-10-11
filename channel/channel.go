@@ -26,13 +26,9 @@ func (s Source) Fetch() (*Channel, error) {
 	return channel, nil
 }
 
-func (s Source) FetchNews() ([]news.Preview, error) {
-	channel, err := s.Fetch()
-	if err != nil {
-		return nil, err
-	}
-
-	return channel.GetNews(), nil
+type NewsFetchResult struct {
+	previews []news.Preview
+	error    error
 }
 
 func NewSource(url string) *Source {

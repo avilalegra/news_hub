@@ -19,22 +19,30 @@ type RssNewsProvider struct {
 	interval chan time.Time
 }
 
-func (p RssNewsProvider) RunAsync(previewsChan chan<- news.Preview) {
+func (p RssNewsProvider) RunAsync(previewsChan chan<- news.Preview, errorsChan chan<- error) {
 	go func() {
-		var wg sync.WaitGroup
 		for range p.interval {
+			var wg sync.WaitGroup
 			for _, source := range p.sources {
 				wg.Add(1)
 				go func(s Source) {
 					defer wg.Done()
-					previews, _ := s.FetchNews()
-					for _, preview := range previews {
-						previewsChan <- preview
-					}
+					fetchSourceNews(s, previewsChan, errorsChan)
 				}(source)
 			}
+			wg.Wait()
 		}
-		wg.Wait()
 		close(previewsChan)
+		close(errorsChan)
 	}()
+}
+
+func fetchSourceNews(s Source, previewsChan chan<- news.Preview, errorsChan chan<- error) {
+	if channel, err := s.Fetch(); err == nil {
+		for _, preview := range channel.GetNews() {
+			previewsChan <- preview
+		}
+	} else {
+		errorsChan <- err
+	}
 }
