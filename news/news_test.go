@@ -1,7 +1,10 @@
 package news
 
 import (
+	"errors"
+	"log"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -21,6 +24,91 @@ func TestSearch(t *testing.T) {
 		results := Search(tData.keywords)
 		assert.Equal(t, tData.count, len(results), tData.keywords)
 	}
+}
+
+type RepoMock struct {
+	Previews []Preview
+}
+
+func (r *RepoMock) Add(preview Preview) {
+	r.Previews = append(r.Previews, preview)
+}
+
+type ProviderMock struct {
+	Trigger  chan time.Time
+	Previews []Preview
+	Errors   []error
+}
+
+func (p ProviderMock) RunAsync(providers chan<- Preview, errs chan<- error) {
+	go func() {
+		for range p.Trigger {
+			for _, preview := range p.Previews {
+				providers <- preview
+			}
+			for _, e := range p.Errors {
+				errs <- e
+			}
+		}
+	}()
+}
+
+func TestCollector(t *testing.T) {
+	repo := &RepoMock{}
+	triggerA := make(chan time.Time)
+	providerA := ProviderMock{triggerA, previews[0:2], nil}
+	triggerB := make(chan time.Time)
+	providerB := ProviderMock{triggerB, previews[2:], nil}
+
+	collector := Collector{
+		[]Provider{providerA, providerB},
+		repo,
+		log.Default(),
+	}
+	collector.Run()
+
+	triggerA <- time.Now()
+	time.Sleep(1 * time.Millisecond)
+	assert.Equal(t, previews[:2], repo.Previews)
+
+	triggerB <- time.Now()
+	time.Sleep(1 * time.Millisecond)
+	assert.Equal(t, previews, repo.Previews)
+}
+
+func TestProviderErrorLog(t *testing.T) {
+	repo := new(RepoMock)
+	triggerA := make(chan time.Time, 1)
+	providerA := ProviderMock{triggerA, nil, []error{errors.New("expected element type <rss> but have <xml>")}}
+	triggerB := make(chan time.Time, 1)
+	providerB := ProviderMock{triggerB, nil, []error{errors.New("bad server response when fetching xml")}}
+	writerMock := new(WriterMock)
+	logger := log.New(writerMock, "", log.LstdFlags)
+
+	collector := Collector{
+		[]Provider{providerA, providerB},
+		repo,
+		logger,
+	}
+
+	collector.Run()
+
+	triggerA <- time.Now()
+	time.Sleep(1 * time.Millisecond)
+	assert.Contains(t, writerMock.msg, "expected element type <rss> but have <xml>")
+
+	triggerB <- time.Now()
+	time.Sleep(1 * time.Millisecond)
+	assert.Contains(t, writerMock.msg, "bad server response when fetching xml")
+}
+
+type WriterMock struct {
+	msg string
+}
+
+func (w *WriterMock) Write(p []byte) (n int, err error) {
+	w.msg = string(p)
+	return 1, nil
 }
 
 var searchTestData = []struct {

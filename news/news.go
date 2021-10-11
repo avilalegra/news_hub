@@ -3,6 +3,7 @@ package news
 import (
 	strip "github.com/grokify/html-strip-tags-go"
 	"html"
+	"log"
 	"regexp"
 	"strings"
 )
@@ -49,4 +50,34 @@ func All() []Preview {
 
 type Provider interface {
 	RunAsync(chan<- Preview, chan<- error)
+}
+
+type Collector struct {
+	Providers []Provider
+	Repo      Repository
+	logger    *log.Logger
+}
+
+type Repository interface {
+	Add(preview Preview)
+}
+
+func (c Collector) Run() {
+	prvChan := make(chan Preview)
+	errChan := make(chan error)
+
+	for _, p := range c.Providers {
+		p.RunAsync(prvChan, errChan)
+	}
+
+	go func() {
+		for {
+			select {
+			case preview := <-prvChan:
+				c.Repo.Add(preview)
+			case err := <-errChan:
+				c.logger.Print(err)
+			}
+		}
+	}()
 }
