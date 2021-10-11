@@ -23,11 +23,12 @@ func TestRssProvider(t *testing.T) {
 		trigger <- time.Now()
 		close(trigger)
 
-		for preview := range previewsChan {
-			previews = append(previews, preview)
+		for i := 0; i < len(tData.previews)*2; i++ {
+			previews = append(previews, <-previewsChan)
 		}
-		for err := range errorsChan {
-			errs = append(errs, err)
+
+		for i := 0; i < len(tData.errors)*2; i++ {
+			errs = append(errs, <-errorsChan)
 		}
 
 		assert.Equal(t, len(tData.previews)*2, len(previews))

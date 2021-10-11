@@ -32,8 +32,6 @@ func (p RssNewsProvider) RunAsync(previewsChan chan<- news.Preview, errorsChan c
 			}
 			wg.Wait()
 		}
-		close(previewsChan)
-		close(errorsChan)
 	}()
 }
 
