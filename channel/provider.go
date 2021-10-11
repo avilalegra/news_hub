@@ -1,25 +1,22 @@
 package channel
 
 import (
-	"log"
 	"sync"
 	"time"
 
 	"avilego.me/news_hub/news"
 )
 
-func NewRssNewsProvider(sources []Source, interval chan time.Time, logger *log.Logger) news.Provider {
+func NewRssNewsProvider(sources []Source, interval chan time.Time) news.Provider {
 	return RssNewsProvider{
 		sources,
 		interval,
-		logger,
 	}
 }
 
 type RssNewsProvider struct {
 	sources  []Source
 	interval chan time.Time
-	logger   *log.Logger
 }
 
 func (p RssNewsProvider) RunAsync(previewsChan chan<- news.Preview) {
@@ -30,10 +27,7 @@ func (p RssNewsProvider) RunAsync(previewsChan chan<- news.Preview) {
 				wg.Add(1)
 				go func(s Source) {
 					defer wg.Done()
-					previews, err := s.FetchNews()
-					if err != nil {
-						p.logger.Println(err)
-					}
+					previews, _ := s.FetchNews()
 					for _, preview := range previews {
 						previewsChan <- preview
 					}
