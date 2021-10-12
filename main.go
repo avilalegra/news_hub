@@ -1,9 +1,14 @@
 package main
 
-import "fmt"
+import (
+	"avilego.me/news_hub/persistence"
+	"context"
+)
 
 func main() {
-	fmt.Println("Hello world")
-
-	
+	defer func() {
+		if err := persistence.Client.Disconnect(context.TODO()); err != nil {
+			panic(err)
+		}
+	}()
 }

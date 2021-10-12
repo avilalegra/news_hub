@@ -1,7 +1,9 @@
 package news
 
 import (
+	"context"
 	"errors"
+	"go.mongodb.org/mongo-driver/bson"
 	"log"
 	"testing"
 	"time"
@@ -30,8 +32,9 @@ type RepoMock struct {
 	Previews []Preview
 }
 
-func (r *RepoMock) Add(preview Preview) {
+func (r *RepoMock) Add(preview Preview) error {
 	r.Previews = append(r.Previews, preview)
+	return nil
 }
 
 type ProviderMock struct {
@@ -100,6 +103,38 @@ func TestProviderErrorLog(t *testing.T) {
 	triggerB <- time.Now()
 	time.Sleep(1 * time.Millisecond)
 	assert.Contains(t, writerMock.msg, "bad server response when fetching xml")
+}
+
+func TestAdd(t *testing.T) {
+	err := DefRepo.db.Drop(context.TODO())
+	if err != nil {
+		panic(err)
+	}
+	var prevs []Preview
+	prevCol := DefRepo.db.Collection("news_previews")
+
+	cursor, err := prevCol.Find(context.TODO(), bson.D{{}})
+	if err != nil {
+		panic(err)
+	}
+	err = cursor.All(context.TODO(), &prevs)
+	if err != nil {
+		panic(err)
+	}
+	assert.Equal(t, 0, len(prevs))
+
+	DefRepo.Add(previews[0])
+	DefRepo.Add(previews[1])
+
+	cursor, err = prevCol.Find(context.TODO(), bson.D{{}})
+	if err != nil {
+		panic(err)
+	}
+	err = cursor.All(context.TODO(), &prevs)
+	if err != nil {
+		panic(err)
+	}
+	assert.Equal(t, previews[0:2], prevs)
 }
 
 type WriterMock struct {

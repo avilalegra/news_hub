@@ -17,7 +17,7 @@ type Source struct {
 
 type Preview struct {
 	Title       string
-	Link        string
+	Link        string ``
 	Description string
 	Source      *Source
 }
@@ -56,10 +56,6 @@ type Collector struct {
 	Providers []Provider
 	Repo      Repository
 	logger    *log.Logger
-}
-
-type Repository interface {
-	Add(preview Preview)
 }
 
 func (c Collector) Run() {
