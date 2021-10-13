@@ -11,7 +11,7 @@ import (
 const (
 	USER = "root"
 	PWD  = "toor"
-	HOST = "localhost"
+	HOST = "mongo"
 	PORT = "27017"
 )
 
