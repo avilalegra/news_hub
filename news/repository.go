@@ -11,8 +11,7 @@ type Repository interface {
 }
 
 type MongoRepo struct {
-	db     *mongo.Database
-	client *mongo.Client
+	db *mongo.Database
 }
 
 var DefRepo MongoRepo
@@ -26,6 +25,5 @@ func (r *MongoRepo) Add(preview Preview) error {
 }
 
 func init() {
-	db := persistence.Client.Database(persistence.DbName)
-	DefRepo = MongoRepo{db, persistence.Client}
+	DefRepo = MongoRepo{persistence.Database}
 }

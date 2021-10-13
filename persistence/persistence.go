@@ -15,9 +15,9 @@ const (
 	PORT = "27017"
 )
 
-var DbName = "todays_news"
-
+var dbName = "todays_news"
 var Client *mongo.Client
+var Database *mongo.Database
 
 func init() {
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
@@ -32,4 +32,5 @@ func init() {
 	}
 
 	Client = client
+	Database = Client.Database(dbName)
 }
