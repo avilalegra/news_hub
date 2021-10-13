@@ -1,23 +1,20 @@
-package news
+package repo
 
 import (
+	"avilego.me/news_hub/news"
 	"avilego.me/news_hub/persistence"
 	"context"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-type Repository interface {
-	Add(preview Preview) error
-}
-
 type MongoRepo struct {
-	db *mongo.Database
+	Db *mongo.Database
 }
 
 var DefRepo MongoRepo
 
-func (r *MongoRepo) Add(preview Preview) error {
-	col := r.db.Collection("news_previews")
+func (r *MongoRepo) Add(preview news.Preview) error {
+	col := r.Db.Collection("news_previews")
 	if _, err := col.InsertOne(context.TODO(), preview); err != nil {
 		return err
 	}

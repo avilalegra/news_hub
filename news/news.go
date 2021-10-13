@@ -52,6 +52,10 @@ type Provider interface {
 	RunAsync(chan<- Preview, chan<- error)
 }
 
+type Repository interface {
+	Add(preview Preview) error
+}
+
 type Collector struct {
 	Providers []Provider
 	Repo      Repository
