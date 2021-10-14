@@ -1,27 +1,20 @@
 package persistence
 
 import (
+	_ "avilego.me/news_hub/env"
 	"context"
-	"fmt"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"os"
 	"time"
 )
 
-const (
-	USER = "root"
-	PWD  = "toor"
-	HOST = "mongo"
-	PORT = "27017"
-)
-
-var dbName = "todays_news"
 var Client *mongo.Client
 var Database *mongo.Database
 
 func init() {
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(fmt.Sprintf("mongodb://%s:%s@%s:%s", USER, PWD, HOST, PORT)))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(os.Getenv("MongoUri")))
 
 	if err != nil {
 		panic(err)
@@ -32,5 +25,5 @@ func init() {
 	}
 
 	Client = client
-	Database = Client.Database(dbName)
+	Database = Client.Database(os.Getenv("DbName"))
 }
