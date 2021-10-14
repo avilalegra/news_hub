@@ -8,19 +8,23 @@ import (
 )
 
 type MongoRepo struct {
-	Db *mongo.Database
+	Db      *mongo.Database
+	newsCol *mongo.Collection
 }
 
 var DefRepo MongoRepo
 
 func (r *MongoRepo) Add(preview news.Preview) error {
-	col := r.Db.Collection("news_previews")
-	if _, err := col.InsertOne(context.TODO(), preview); err != nil {
+	if _, err := r.newsCol.InsertOne(context.TODO(), preview); err != nil {
 		return err
 	}
 	return nil
 }
 
+func NewMongoRepo(database *mongo.Database) MongoRepo {
+	return MongoRepo{database, database.Collection("news_previews")}
+}
+
 func init() {
-	DefRepo = MongoRepo{persistence.Database}
+	DefRepo = NewMongoRepo(persistence.Database)
 }

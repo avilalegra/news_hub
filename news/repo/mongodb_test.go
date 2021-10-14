@@ -2,6 +2,7 @@ package repo
 
 import (
 	"avilego.me/news_hub/news"
+	"avilego.me/news_hub/persistence"
 	"context"
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/bson"
@@ -9,12 +10,12 @@ import (
 )
 
 func TestAdd(t *testing.T) {
-	err := DefRepo.Db.Drop(context.TODO())
+	err := persistence.Database.Drop(context.TODO())
 	if err != nil {
 		panic(err)
 	}
 	var prevs []news.Preview
-	prevCol := DefRepo.Db.Collection("news_previews")
+	prevCol := persistence.Database.Collection("news_previews")
 
 	cursor, err := prevCol.Find(context.TODO(), bson.D{{}})
 	if err != nil {
