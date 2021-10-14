@@ -55,6 +55,41 @@ var sources = map[string]*news.Source{
 	},
 }
 
+func TestFindByTitle(t *testing.T) {
+	persistence.Database.Drop(context.TODO())
+	prevCol := persistence.Database.Collection("news_previews")
+	prevCol.InsertOne(context.TODO(), previews[0])
+	prevCol.InsertOne(context.TODO(), previews[1])
+
+	for _, tData := range tsFindByTitle {
+		preview := DefRepo.findByTitle(tData.Title)
+		assert.Equal(t, tData.Preview, preview)
+	}
+}
+
+var tsFindByTitle = []struct {
+	Title   string
+	Preview *news.Preview
+}{
+	{
+		`AMD Posts Code Enabling "Cyan Skillfish" Display Support Due To Different DCN2 Variant`,
+		&previews[0],
+	},
+
+	{
+		`Linux 5.16 To Bring Initial DisplayPort 2.0 Support For AMD Radeon Driver (AMDGPU)`,
+		&previews[1],
+	},
+	{
+		`Linux 5.16 To Bring Initial DisplayPort 2.0`,
+		nil,
+	},
+	{
+		"not existing title",
+		nil,
+	},
+}
+
 var previews = []news.Preview{
 	{
 		Title:       `AMD Posts Code Enabling "Cyan Skillfish" Display Support Due To Different DCN2 Variant`,
