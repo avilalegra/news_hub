@@ -39,9 +39,12 @@ func (r *MongoRepo) Search(keywords string) []news.Preview {
 func (r *MongoRepo) findByTitle(title string) *news.Preview {
 	var preview news.Preview
 	result := r.prevCol.FindOne(context.TODO(), bson.M{"title": title})
+	if result.Err() == mongo.ErrNoDocuments {
+		return nil
+	}
 	err := result.Decode(&preview)
 	if err != nil {
-		return nil
+		panic(err)
 	}
 	return &preview
 }
