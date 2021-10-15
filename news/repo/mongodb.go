@@ -13,7 +13,7 @@ type MongoRepo struct {
 	prevCol *mongo.Collection
 }
 
-var DefRepo MongoRepo
+var Instance MongoRepo
 
 func (r MongoRepo) Add(preview news.Preview) error {
 	if prev := r.findByTitle(preview.Title); prev != nil {
@@ -57,5 +57,5 @@ func NewMongoRepo(database *mongo.Database) MongoRepo {
 }
 
 func init() {
-	DefRepo = NewMongoRepo(persistence.Database)
+	Instance = NewMongoRepo(persistence.Database)
 }
