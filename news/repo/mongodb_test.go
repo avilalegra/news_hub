@@ -10,10 +10,7 @@ import (
 )
 
 func TestAdd(t *testing.T) {
-	err := persistence.Database.Drop(context.TODO())
-	if err != nil {
-		panic(err)
-	}
+	persistence.RecreateDb()
 	var prevs []news.Preview
 	prevCol := persistence.Database.Collection("news_previews")
 
@@ -41,22 +38,8 @@ func TestAdd(t *testing.T) {
 	assert.Equal(t, previews[0:2], prevs)
 }
 
-var sources = map[string]*news.Source{
-	"phoronix": {
-		Title:       `Phoronix`,
-		Link:        `https://www.phoronix.com/`,
-		Language:    `en-US`,
-		Description: `Linux Hardware Reviews & News`,
-	},
-	"rtve": {
-		Title:       `Noticias en rtve.es`,
-		Link:        `http://www.rtve.es`,
-		Description: `RSS Tags`,
-	},
-}
-
 func TestFindByTitle(t *testing.T) {
-	persistence.Database.Drop(context.TODO())
+	persistence.RecreateDb()
 	prevCol := persistence.Database.Collection("news_previews")
 	prevCol.InsertOne(context.TODO(), previews[0])
 	prevCol.InsertOne(context.TODO(), previews[1])
@@ -133,6 +116,20 @@ var tsFindByTitle = []struct {
 	{
 		"not existing title",
 		nil,
+	},
+}
+
+var sources = map[string]*news.Source{
+	"phoronix": {
+		Title:       `Phoronix`,
+		Link:        `https://www.phoronix.com/`,
+		Language:    `en-US`,
+		Description: `Linux Hardware Reviews & News`,
+	},
+	"rtve": {
+		Title:       `Noticias en rtve.es`,
+		Link:        `http://www.rtve.es`,
+		Description: `RSS Tags`,
 	},
 }
 
