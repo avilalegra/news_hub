@@ -1,0 +1,9 @@
+i# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+/env/.env.test.local
+/coverage
