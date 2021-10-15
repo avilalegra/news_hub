@@ -9,23 +9,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestLoad(t *testing.T) {
-	Load(previews...)
-	all := All()
-	for _, tData := range previews {
-		assert.Contains(t, all, tData)
-	}
-}
-
-func TestSearch(t *testing.T) {
-	Load(previews...)
-	Load(previews...)
-	for _, tData := range searchTestData {
-		results := Search(tData.keywords)
-		assert.Equal(t, tData.count, len(results), tData.keywords)
-	}
-}
-
 type RepoMock struct {
 	Previews []Preview
 }
@@ -113,44 +96,6 @@ type WriterMock struct {
 func (w *WriterMock) Write(p []byte) (n int, err error) {
 	w.msg = string(p)
 	return 1, nil
-}
-
-var searchTestData = []struct {
-	keywords string
-	count    int
-}{
-	{
-		"núcleos poblacionales",
-		1,
-	},
-	{
-		"Lava dirección confinados",
-		1,
-	},
-	{
-		"lava dirección confinados hierro",
-		0,
-	},
-	{
-		"directo, municipio",
-		2,
-	},
-	{
-		"Display; Support. PosTing",
-		1,
-	},
-	{
-		"<ul> <li>",
-		0,
-	},
-	{
-		"linux kernel",
-		1,
-	},
-	{
-		"linux kernel covid",
-		0,
-	},
 }
 
 var sources = map[string]*Source{
