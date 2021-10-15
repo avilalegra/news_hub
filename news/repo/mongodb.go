@@ -15,10 +15,15 @@ type MongoRepo struct {
 
 var DefRepo MongoRepo
 
-func (r *MongoRepo) Add(preview news.Preview) {
+func (r *MongoRepo) Add(preview news.Preview) error {
+	if prev := r.findByTitle(preview.Title); prev != nil {
+		return news.PrevExistsErr{PreviewTitle: prev.Title}
+	}
 	if _, err := r.prevCol.InsertOne(context.TODO(), preview); err != nil {
 		panic(err)
 	}
+
+	return nil
 }
 
 func (r *MongoRepo) Search(keywords string) []news.Preview {

@@ -1,6 +1,7 @@
 package news
 
 import (
+	"fmt"
 	"log"
 )
 
@@ -26,9 +27,17 @@ type Browser interface {
 	Search(keywords string) []Preview
 }
 
+type PrevExistsErr struct {
+	PreviewTitle string
+}
+
+func (e PrevExistsErr) Error() string {
+	return fmt.Sprintf("existing preview with title %s", e.PreviewTitle)
+}
+
 type Repository interface {
 	Browser
-	Add(preview Preview)
+	Add(preview Preview) error
 }
 
 type Collector struct {

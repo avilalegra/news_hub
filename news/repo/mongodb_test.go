@@ -24,6 +24,9 @@ func TestAdd(t *testing.T) {
 	cursor, _ = prevCol.Find(context.TODO(), bson.D{{}})
 	cursor.All(context.TODO(), &prevs)
 	assert.Equal(t, previews[0:2], prevs)
+
+	err := DefRepo.Add(previews[1])
+	assert.ErrorIs(t, err, news.PrevExistsErr{PreviewTitle: previews[1].Title})
 }
 
 func TestFindByTitle(t *testing.T) {

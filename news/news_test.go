@@ -13,8 +13,9 @@ type RepoMock struct {
 	Previews []Preview
 }
 
-func (r *RepoMock) Add(preview Preview) {
+func (r *RepoMock) Add(preview Preview) error {
 	r.Previews = append(r.Previews, preview)
+	return nil
 }
 
 func (r *RepoMock) Search(keywords string) []Preview {
