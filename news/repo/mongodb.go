@@ -15,11 +15,10 @@ type MongoRepo struct {
 
 var DefRepo MongoRepo
 
-func (r *MongoRepo) Add(preview news.Preview) error {
+func (r *MongoRepo) Add(preview news.Preview) {
 	if _, err := r.prevCol.InsertOne(context.TODO(), preview); err != nil {
-		return err
+		panic(err)
 	}
-	return nil
 }
 
 func (r *MongoRepo) Search(keywords string) []news.Preview {
