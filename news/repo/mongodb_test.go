@@ -14,27 +14,15 @@ func TestAdd(t *testing.T) {
 	var prevs []news.Preview
 	prevCol := persistence.Database.Collection("news_previews")
 
-	cursor, err := prevCol.Find(context.TODO(), bson.D{{}})
-	if err != nil {
-		panic(err)
-	}
-	err = cursor.All(context.TODO(), &prevs)
-	if err != nil {
-		panic(err)
-	}
+	cursor, _ := prevCol.Find(context.TODO(), bson.M{})
+	cursor.All(context.TODO(), &prevs)
 	assert.Equal(t, 0, len(prevs))
 
 	DefRepo.Add(previews[0])
 	DefRepo.Add(previews[1])
 
-	cursor, err = prevCol.Find(context.TODO(), bson.D{{}})
-	if err != nil {
-		panic(err)
-	}
-	err = cursor.All(context.TODO(), &prevs)
-	if err != nil {
-		panic(err)
-	}
+	cursor, _ = prevCol.Find(context.TODO(), bson.D{{}})
+	cursor.All(context.TODO(), &prevs)
 	assert.Equal(t, previews[0:2], prevs)
 }
 
