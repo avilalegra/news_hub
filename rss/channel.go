@@ -1,4 +1,4 @@
-package channel
+package rss
 
 import (
 	"avilego.me/news_hub/news"
@@ -60,11 +60,11 @@ func (f DefaultHttpClient) Get(url string) ([]byte, error) {
 type rss struct {
 	XMLName xml.Name `xml:"rss"`
 	Version string   `xml:"version,attr"`
-	Channel Channel  `xml:"channel"`
+	Channel Channel  `xml:"rss"`
 }
 
 type Channel struct {
-	XMLName       xml.Name `xml:"channel"`
+	XMLName       xml.Name `xml:"rss"`
 	Title         string   `xml:"title"`
 	Link          string   `xml:"_ link"`
 	Description   string   `xml:"description"`
