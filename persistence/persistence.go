@@ -6,6 +6,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/x/bsonx"
 	"os"
 	"time"
 )
@@ -44,18 +45,19 @@ func RecreateDb() {
 
 func ensureIndexes() {
 	collection := Database.Collection("news_previews")
-	index := mongo.IndexModel{
-		Keys: bson.D{
-			{"title", "text"},
-			{"description", "text"},
+	indexes := []mongo.IndexModel{
+		{
+			Keys: bson.D{
+				{"title", bsonx.String("text")},
+				{"description", bsonx.String("text")},
+			},
+			Options: options.Index().SetWeights(bson.D{
+				{"title", 9},
+				{"description", 3},
+			}),
 		},
-		Options: options.Index().SetWeights(bson.D{
-			{"title", 9},
-			{"description", 3},
-		}),
 	}
-	_, err := collection.Indexes().CreateOne(context.Background(), index)
-
+	_, err := collection.Indexes().CreateMany(context.Background(), indexes)
 	if err != nil {
 		panic(err)
 	}

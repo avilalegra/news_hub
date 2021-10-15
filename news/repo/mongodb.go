@@ -35,7 +35,6 @@ func (r *MongoRepo) Search(keywords string) []news.Preview {
 	return previews
 }
 
-// TODO: Create title collection index
 func (r *MongoRepo) findByTitle(title string) *news.Preview {
 	var preview news.Preview
 	result := r.prevCol.FindOne(context.TODO(), bson.M{"title": title})
