@@ -22,6 +22,19 @@ func (r *MongoRepo) Add(preview news.Preview) error {
 	return nil
 }
 
+func (r *MongoRepo) Search(keywords string) []news.Preview {
+	var previews []news.Preview
+	cursor, err := r.prevCol.Find(context.TODO(), bson.M{"$text": bson.M{"$search": keywords}})
+	if err != nil {
+		panic(err)
+	}
+	err = cursor.All(context.TODO(), &previews)
+	if err != nil {
+		panic(err)
+	}
+	return previews
+}
+
 // TODO: Create title collection index
 func (r *MongoRepo) findByTitle(title string) *news.Preview {
 	var preview news.Preview

@@ -8,7 +8,7 @@ import (
 	"runtime"
 )
 
-const APP_ENV = "dev"
+const APP_ENV = "test"
 
 func init() {
 	envDir := projDir() + "/env"
@@ -20,10 +20,10 @@ func init() {
 	if err := godotenv.Load(envDir + "/.env." + env + ".local"); err != nil {
 		panic(err)
 	}
-	if 	err := godotenv.Load(envDir + "/.env." + env); err != nil {
+	if err := godotenv.Load(envDir + "/.env." + env); err != nil {
 		panic(err)
 	}
-	if 	err := godotenv.Load(envDir + "/.env"); err != nil {
+	if err := godotenv.Load(envDir + "/.env"); err != nil {
 		panic(err)
 	}
 }

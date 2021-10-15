@@ -54,6 +54,7 @@ type Provider interface {
 
 type Repository interface {
 	Add(preview Preview) error
+	Search(keywords string) []*Preview
 }
 
 type Collector struct {
