@@ -22,9 +22,13 @@ type Provider interface {
 	RunAsync(chan<- Preview, chan<- error)
 }
 
-type Repository interface {
-	Add(preview Preview)
+type Browser interface {
 	Search(keywords string) []Preview
+}
+
+type Repository interface {
+	Browser
+	Add(preview Preview)
 }
 
 type Collector struct {
