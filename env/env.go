@@ -14,15 +14,9 @@ func init() {
 	envDir := projDir() + "/env"
 	env := getAppEnv()
 
-	if err := godotenv.Load(envDir + "/.env." + env + ".local"); err != nil {
-		panic(err)
-	}
-	if err := godotenv.Load(envDir + "/.env." + env); err != nil {
-		panic(err)
-	}
-	if err := godotenv.Load(envDir + "/.env"); err != nil {
-		panic(err)
-	}
+	godotenv.Load(envDir + "/.env." + env + ".local")
+	godotenv.Load(envDir + "/.env." + env)
+	godotenv.Load(envDir + "/.env")
 }
 
 func getAppEnv() string {
