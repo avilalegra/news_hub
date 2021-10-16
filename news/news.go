@@ -58,9 +58,12 @@ func (c Collector) Run() {
 		for {
 			select {
 			case preview := <-prvChan:
-				c.Repo.Add(preview)
+				err := c.Repo.Add(preview)
+				if err == nil {
+					c.Logger.Printf("news preview added: %s\n", preview.Title)
+				}
 			case err := <-errChan:
-				c.Logger.Print(err)
+				c.Logger.Printf("provider error: %s\n", err)
 			}
 		}
 	}()

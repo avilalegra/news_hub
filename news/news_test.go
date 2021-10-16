@@ -67,7 +67,7 @@ func TestCollector(t *testing.T) {
 func TestProviderErrorLog(t *testing.T) {
 	r := new(RepoMock)
 	triggerA := make(chan time.Time, 1)
-	providerA := ProviderMock{triggerA, nil, []error{errors.New("expected element type <rss> but have <xml>")}}
+	providerA := ProviderMock{triggerA, previews[0:1], nil}
 	triggerB := make(chan time.Time, 1)
 	providerB := ProviderMock{triggerB, nil, []error{errors.New("bad server response when fetching xml")}}
 	writerMock := new(WriterMock)
@@ -83,7 +83,7 @@ func TestProviderErrorLog(t *testing.T) {
 
 	triggerA <- time.Now()
 	time.Sleep(1 * time.Millisecond)
-	assert.Contains(t, writerMock.msg, "expected element type <rss> but have <xml>")
+	assert.Contains(t, writerMock.msg, `news preview added: AMD Posts Code Enabling "Cyan Skillfish" Display Support Due To Different DCN2 Variant`)
 
 	triggerB <- time.Now()
 	time.Sleep(1 * time.Millisecond)
