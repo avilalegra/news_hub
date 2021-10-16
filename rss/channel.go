@@ -31,8 +31,8 @@ type NewsFetchResult struct {
 	error    error
 }
 
-func NewSource(url string) *Source {
-	return &Source{
+func NewSource(url string) Source {
+	return Source{
 		Url:        url,
 		HttpClient: DefaultHttpClient{},
 	}
