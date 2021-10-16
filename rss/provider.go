@@ -8,18 +8,18 @@ import (
 )
 
 func NewRssNewsProvider(sources []Source, interval chan time.Time) news.Provider {
-	return RssNewsProvider{
+	return NewsProvider{
 		sources,
 		interval,
 	}
 }
 
-type RssNewsProvider struct {
+type NewsProvider struct {
 	sources  []Source
 	interval chan time.Time
 }
 
-func (p RssNewsProvider) RunAsync(previewsChan chan<- news.Preview, errorsChan chan<- error) {
+func (p NewsProvider) RunAsync(previewsChan chan<- news.Preview, errorsChan chan<- error) {
 	go func() {
 		for range p.interval {
 			var wg sync.WaitGroup
