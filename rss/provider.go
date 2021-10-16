@@ -7,7 +7,7 @@ import (
 	"avilego.me/news_hub/news"
 )
 
-func NewRssNewsProvider(sources []Source, interval chan time.Time) news.Provider {
+func NewRssNewsProvider(sources []Source, interval <-chan time.Time) news.Provider {
 	return NewsProvider{
 		sources,
 		interval,
@@ -16,7 +16,7 @@ func NewRssNewsProvider(sources []Source, interval chan time.Time) news.Provider
 
 type NewsProvider struct {
 	sources  []Source
-	interval chan time.Time
+	interval <-chan time.Time
 }
 
 func (p NewsProvider) RunAsync(previewsChan chan<- news.Preview, errorsChan chan<- error) {
