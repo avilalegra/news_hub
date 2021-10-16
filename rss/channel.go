@@ -60,11 +60,11 @@ func (f DefaultHttpClient) Get(url string) ([]byte, error) {
 type rss struct {
 	XMLName xml.Name `xml:"rss"`
 	Version string   `xml:"version,attr"`
-	Channel Channel  `xml:"rss"`
+	Channel Channel  `xml:"channel"`
 }
 
 type Channel struct {
-	XMLName       xml.Name `xml:"rss"`
+	XMLName       xml.Name `xml:"channel"`
 	Title         string   `xml:"title"`
 	Link          string   `xml:"_ link"`
 	Description   string   `xml:"description"`
