@@ -5,5 +5,6 @@ i# Binaries for programs and plugins
 *.so
 *.dylib
 
-/env/.env.test.local
-/coverage
+.env.local
+.env.test.local
+coverage

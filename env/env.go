@@ -8,7 +8,7 @@ import (
 	"runtime"
 )
 
-var AppEnvFallback = "test"
+var AppEnvFallback = "dev"
 
 func init() {
 	envDir := projDir() + "/env"
@@ -16,6 +16,7 @@ func init() {
 
 	godotenv.Load(envDir + "/.env." + env + ".local")
 	godotenv.Load(envDir + "/.env." + env)
+	godotenv.Load(envDir + "/.env.local")
 	godotenv.Load(envDir + "/.env")
 }
 
