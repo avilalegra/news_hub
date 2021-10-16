@@ -43,7 +43,7 @@ type Repository interface {
 type Collector struct {
 	Providers []Provider
 	Repo      Repository
-	logger    *log.Logger
+	Logger    *log.Logger
 }
 
 func (c Collector) Run() {
@@ -60,7 +60,7 @@ func (c Collector) Run() {
 			case preview := <-prvChan:
 				c.Repo.Add(preview)
 			case err := <-errChan:
-				c.logger.Print(err)
+				c.Logger.Print(err)
 			}
 		}
 	}()
