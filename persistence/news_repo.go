@@ -1,8 +1,7 @@
-package repo
+package persistence
 
 import (
 	"avilego.me/news_hub/news"
-	"avilego.me/news_hub/persistence"
 	"context"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -57,5 +56,5 @@ func NewMongoRepo(database *mongo.Database) MongoRepo {
 }
 
 func init() {
-	Instance = NewMongoRepo(persistence.Database)
+	Instance = NewMongoRepo(Database)
 }

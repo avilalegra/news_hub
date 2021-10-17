@@ -1,8 +1,7 @@
-package repo
+package persistence
 
 import (
 	"avilego.me/news_hub/news"
-	"avilego.me/news_hub/persistence"
 	"context"
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/bson"
@@ -10,9 +9,9 @@ import (
 )
 
 func TestAdd(t *testing.T) {
-	persistence.RecreateDb()
+	RecreateDb()
 	var prevs []news.Preview
-	prevCol := persistence.Database.Collection("news_previews")
+	prevCol := Database.Collection("news_previews")
 
 	cursor, _ := prevCol.Find(context.TODO(), bson.M{})
 	cursor.All(context.TODO(), &prevs)
@@ -30,8 +29,8 @@ func TestAdd(t *testing.T) {
 }
 
 func TestFindByTitle(t *testing.T) {
-	persistence.RecreateDb()
-	prevCol := persistence.Database.Collection("news_previews")
+	RecreateDb()
+	prevCol := Database.Collection("news_previews")
 	prevCol.InsertOne(context.TODO(), previews[0])
 	prevCol.InsertOne(context.TODO(), previews[1])
 
@@ -42,8 +41,8 @@ func TestFindByTitle(t *testing.T) {
 }
 
 func TestSearch(t *testing.T) {
-	persistence.RecreateDb()
-	prevCol := persistence.Database.Collection("news_previews")
+	RecreateDb()
+	prevCol := Database.Collection("news_previews")
 	for _, preview := range previews {
 		prevCol.InsertOne(context.TODO(), preview)
 	}
