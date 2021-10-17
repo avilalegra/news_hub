@@ -1,6 +1,7 @@
 package main
 
 import (
+	"avilego.me/news_hub/container"
 	"avilego.me/news_hub/persistence"
 	"context"
 )
@@ -11,4 +12,6 @@ func main() {
 			panic(err)
 		}
 	}()
+
+	container.GetCollector().Run()
 }
