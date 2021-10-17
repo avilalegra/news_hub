@@ -15,7 +15,7 @@ func TestGetAppEnv(t *testing.T) {
 }
 
 func TestProjDir(t *testing.T) {
-	assert.True(t, fileExists(projDir()+"/news"))
+	assert.True(t, fileExists(ProjDir()+"/news"))
 }
 
 func fileExists(path string) bool {

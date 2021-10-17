@@ -1,6 +1,7 @@
 package env
 
 import (
+	"fmt"
 	"github.com/joho/godotenv"
 	"os"
 	"path"
@@ -8,10 +9,10 @@ import (
 	"runtime"
 )
 
-var AppEnvFallback = "dev"
+var AppEnvFallback = "test"
 
 func init() {
-	envDir := projDir() + "/env"
+	envDir := ProjDir() + "/env"
 	env := getAppEnv()
 
 	godotenv.Load(envDir + "/.env." + env + ".local")
@@ -28,8 +29,12 @@ func getAppEnv() string {
 	return env
 }
 
-func projDir() string {
+func ProjDir() string {
 	_, b, _, _ := runtime.Caller(0)
 	d := path.Join(path.Dir(b))
 	return filepath.Dir(d)
+}
+
+func LogFile() string {
+	return fmt.Sprintf("%s/log/%s.log", ProjDir(), getAppEnv())
 }
