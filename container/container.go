@@ -34,3 +34,7 @@ func GetCollector() news.Collector {
 		Logger:    GetLogger(),
 	}
 }
+
+func GetBrowser() news.Browser {
+	return persistence.Instance
+}
