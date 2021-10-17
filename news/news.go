@@ -27,6 +27,10 @@ type Browser interface {
 	Search(keywords string) []Preview
 }
 
+type Keeper interface {
+	Add(preview Preview) error
+}
+
 type PrevExistsErr struct {
 	PreviewTitle string
 }
@@ -35,14 +39,9 @@ func (e PrevExistsErr) Error() string {
 	return fmt.Sprintf("existing preview with title %s", e.PreviewTitle)
 }
 
-type Repository interface {
-	Browser
-	Add(preview Preview) error
-}
-
 type Collector struct {
 	Providers []Provider
-	Repo      Repository
+	Keeper    Keeper
 	Logger    *log.Logger
 }
 
@@ -58,7 +57,7 @@ func (c Collector) Run() {
 		for {
 			select {
 			case preview := <-prvChan:
-				err := c.Repo.Add(preview)
+				err := c.Keeper.Add(preview)
 				if err == nil {
 					c.Logger.Printf("news preview added: %s\n", preview.Title)
 				}

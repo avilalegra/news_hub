@@ -9,16 +9,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type RepoMock struct {
+type KeeperMock struct {
 	Previews []Preview
 }
 
-func (r *RepoMock) Add(preview Preview) error {
+func (r *KeeperMock) Add(preview Preview) error {
 	r.Previews = append(r.Previews, preview)
-	return nil
-}
-
-func (r *RepoMock) Search(keywords string) []Preview {
 	return nil
 }
 
@@ -42,7 +38,7 @@ func (p ProviderMock) RunAsync(providers chan<- Preview, errs chan<- error) {
 }
 
 func TestCollector(t *testing.T) {
-	r := &RepoMock{}
+	r := &KeeperMock{}
 	triggerA := make(chan time.Time)
 	providerA := ProviderMock{triggerA, previews[0:2], nil}
 	triggerB := make(chan time.Time)
@@ -65,7 +61,7 @@ func TestCollector(t *testing.T) {
 }
 
 func TestProviderErrorLog(t *testing.T) {
-	r := new(RepoMock)
+	r := new(KeeperMock)
 	triggerA := make(chan time.Time, 1)
 	providerA := ProviderMock{triggerA, previews[0:1], nil}
 	triggerB := make(chan time.Time, 1)
