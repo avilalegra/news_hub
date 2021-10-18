@@ -14,7 +14,7 @@ type MongoRepo struct {
 
 var Instance MongoRepo
 
-func (r MongoRepo) Add(preview news.Preview) error {
+func (r MongoRepo) Store(preview news.Preview) error {
 	if prev := r.findByTitle(preview.Title); prev != nil {
 		return news.PrevExistsErr{PreviewTitle: prev.Title}
 	}
@@ -25,7 +25,7 @@ func (r MongoRepo) Add(preview news.Preview) error {
 	return nil
 }
 
-func (r MongoRepo) Search(keywords string) []news.Preview {
+func (r MongoRepo) Find(keywords string) []news.Preview {
 	var previews []news.Preview
 	cursor, err := r.prevCol.Find(context.TODO(), bson.M{"$text": bson.M{"$search": keywords}})
 	if err != nil {

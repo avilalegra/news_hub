@@ -13,7 +13,7 @@ type KeeperMock struct {
 	Previews []Preview
 }
 
-func (r *KeeperMock) Add(preview Preview) error {
+func (r *KeeperMock) Store(preview Preview) error {
 	r.Previews = append(r.Previews, preview)
 	return nil
 }
@@ -24,7 +24,7 @@ type ProviderMock struct {
 	Errors   []error
 }
 
-func (p ProviderMock) RunAsync(providers chan<- Preview, errs chan<- error) {
+func (p ProviderMock) ProvideAsync(providers chan<- Preview, errs chan<- error) {
 	go func() {
 		for range p.Trigger {
 			for _, preview := range p.Previews {
@@ -45,7 +45,7 @@ func TestCollector(t *testing.T) {
 	providerB := ProviderMock{triggerB, previews[2:], nil}
 
 	collector := Collector{
-		[]Provider{providerA, providerB},
+		[]AsyncProvider{providerA, providerB},
 		r,
 		log.Default(),
 	}
@@ -70,7 +70,7 @@ func TestProviderErrorLog(t *testing.T) {
 	logger := log.New(writerMock, "", log.LstdFlags)
 
 	collector := Collector{
-		[]Provider{providerA, providerB},
+		[]AsyncProvider{providerA, providerB},
 		r,
 		logger,
 	}

@@ -19,16 +19,16 @@ type Preview struct {
 	Source      *Source
 }
 
-type Provider interface {
-	RunAsync(chan<- Preview, chan<- error)
+type AsyncProvider interface {
+	ProvideAsync(chan<- Preview, chan<- error)
 }
 
-type Browser interface {
-	Search(keywords string) []Preview
+type Finder interface {
+	Find(keywords string) []Preview
 }
 
 type Keeper interface {
-	Add(preview Preview) error
+	Store(preview Preview) error
 }
 
 type PrevExistsErr struct {
@@ -40,7 +40,7 @@ func (e PrevExistsErr) Error() string {
 }
 
 type Collector struct {
-	Providers []Provider
+	Providers []AsyncProvider
 	Keeper    Keeper
 	Logger    *log.Logger
 }
@@ -50,14 +50,14 @@ func (c Collector) Run() {
 	errChan := make(chan error)
 
 	for _, p := range c.Providers {
-		p.RunAsync(prvChan, errChan)
+		p.ProvideAsync(prvChan, errChan)
 	}
 
 	go func() {
 		for {
 			select {
 			case preview := <-prvChan:
-				err := c.Keeper.Add(preview)
+				err := c.Keeper.Store(preview)
 				if err == nil {
 					c.Logger.Printf("news preview added: %s\n", preview.Title)
 				}

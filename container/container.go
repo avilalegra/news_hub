@@ -11,7 +11,7 @@ import (
 	"os"
 )
 
-var Providers = []news.Provider{
+var Providers = []news.AsyncProvider{
 	rss.NewRssNewsProvider(
 		[]rss.Source{
 			rss.NewSource("http://api2.rtve.es/rss/temas_noticias.xml"),
@@ -35,6 +35,6 @@ func GetCollector() news.Collector {
 	}
 }
 
-func GetBrowser() news.Browser {
+func GetBrowser() news.Finder {
 	return persistence.Instance
 }
