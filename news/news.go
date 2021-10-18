@@ -45,6 +45,7 @@ type Collector struct {
 	Logger    *log.Logger
 }
 
+//TODO: Reduce cyclomatic complexity
 func (c Collector) Run() {
 	prvChan := make(chan Preview)
 	errChan := make(chan error)

@@ -8,6 +8,7 @@ import (
 	"time"
 )
 
+//TODO: Simplify this test
 func TestRssProvider(t *testing.T) {
 	for _, tData := range tsRssProvider {
 		trigger := make(chan time.Time, 2)
