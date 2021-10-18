@@ -8,4 +8,3 @@ i# Binaries for programs and plugins
 .env.local
 .env.test.local
 coverage
-/log
