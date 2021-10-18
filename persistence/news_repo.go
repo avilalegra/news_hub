@@ -1,7 +1,7 @@
 package persistence
 
 import (
-	"avilego.me/news_hub/news"
+	"avilego.me/recent_news/news"
 	"context"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"

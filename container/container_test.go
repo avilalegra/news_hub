@@ -1,7 +1,7 @@
 package container
 
 import (
-	"avilego.me/news_hub/env"
+	"avilego.me/recent_news/env"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"os"

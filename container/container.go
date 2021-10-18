@@ -1,10 +1,10 @@
 package container
 
 import (
-	"avilego.me/news_hub/env"
-	"avilego.me/news_hub/news"
-	"avilego.me/news_hub/persistence"
-	"avilego.me/news_hub/rss"
+	"avilego.me/recent_news/env"
+	"avilego.me/recent_news/news"
+	"avilego.me/recent_news/persistence"
+	"avilego.me/recent_news/rss"
 	"time"
 
 	"log"

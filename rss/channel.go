@@ -1,7 +1,7 @@
 package rss
 
 import (
-	"avilego.me/news_hub/news"
+	"avilego.me/recent_news/news"
 	"bytes"
 	"encoding/xml"
 	"io"

@@ -1,7 +1,7 @@
 package rss
 
 import (
-	"avilego.me/news_hub/news"
+	"avilego.me/recent_news/news"
 	"errors"
 	"github.com/stretchr/testify/assert"
 	"testing"

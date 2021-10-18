@@ -4,7 +4,7 @@ import (
 	"sync"
 	"time"
 
-	"avilego.me/news_hub/news"
+	"avilego.me/recent_news/news"
 )
 
 func NewRssNewsProvider(sources []Source, interval <-chan time.Time) news.Provider {

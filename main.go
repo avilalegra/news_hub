@@ -1,8 +1,8 @@
 package main
 
 import (
-	"avilego.me/news_hub/container"
-	"avilego.me/news_hub/persistence"
+	"avilego.me/recent_news/container"
+	"avilego.me/recent_news/persistence"
 	"context"
 )
 

@@ -1,4 +1,4 @@
-module avilego.me/news_hub
+module avilego.me/recent_news
 
 go 1.17
 
