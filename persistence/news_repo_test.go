@@ -12,42 +12,44 @@ func TestAdd(t *testing.T) {
 	RecreateDb()
 	var prevs []news.Preview
 	prevCol := Database.Collection("news_previews")
-
+	keeper := NewMongoKeeper()
 	cursor, _ := prevCol.Find(context.TODO(), bson.M{})
 	cursor.All(context.TODO(), &prevs)
 	assert.Equal(t, 0, len(prevs))
 
-	Instance.Store(previews[0])
-	Instance.Store(previews[1])
+	keeper.Store(previews[0])
+	keeper.Store(previews[1])
 
 	cursor, _ = prevCol.Find(context.TODO(), bson.D{{}})
 	cursor.All(context.TODO(), &prevs)
 	assert.Equal(t, previews[0:2], prevs)
 
-	err := Instance.Store(previews[1])
+	err := keeper.Store(previews[1])
 	assert.ErrorIs(t, err, news.PrevExistsErr{PreviewTitle: previews[1].Title})
 }
 
 func TestFindByTitle(t *testing.T) {
 	RecreateDb()
+	repo := newMongoRepo(Database)
 	prevCol := Database.Collection("news_previews")
 	prevCol.InsertOne(context.TODO(), previews[0])
 	prevCol.InsertOne(context.TODO(), previews[1])
 
 	for _, tData := range tsFindByTitle {
-		preview := Instance.findByTitle(tData.Title)
+		preview := repo.findByTitle(tData.Title)
 		assert.Equal(t, tData.Preview, preview)
 	}
 }
 
 func TestSearch(t *testing.T) {
 	RecreateDb()
+	finder := NewMongoFinder()
 	prevCol := Database.Collection("news_previews")
 	for _, preview := range previews {
 		prevCol.InsertOne(context.TODO(), preview)
 	}
 	for _, tData := range tsSearch[6:7] {
-		results := Instance.Find(tData.keywords)
+		results := finder.Find(tData.keywords)
 		assert.Equal(t, tData.count, len(results), tData.keywords)
 	}
 }

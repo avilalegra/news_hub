@@ -7,14 +7,12 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-type MongoRepo struct {
+type mongoRepo struct {
 	Db      *mongo.Database
 	prevCol *mongo.Collection
 }
 
-var Instance MongoRepo
-
-func (r MongoRepo) Store(preview news.Preview) error {
+func (r mongoRepo) Store(preview news.Preview) error {
 	if prev := r.findByTitle(preview.Title); prev != nil {
 		return news.PrevExistsErr{PreviewTitle: prev.Title}
 	}
@@ -25,7 +23,7 @@ func (r MongoRepo) Store(preview news.Preview) error {
 	return nil
 }
 
-func (r MongoRepo) Find(keywords string) []news.Preview {
+func (r mongoRepo) Find(keywords string) []news.Preview {
 	var previews []news.Preview
 	cursor, err := r.prevCol.Find(context.TODO(), bson.M{"$text": bson.M{"$search": keywords}})
 	if err != nil {
@@ -38,7 +36,7 @@ func (r MongoRepo) Find(keywords string) []news.Preview {
 	return previews
 }
 
-func (r MongoRepo) findByTitle(title string) *news.Preview {
+func (r mongoRepo) findByTitle(title string) *news.Preview {
 	var preview news.Preview
 	result := r.prevCol.FindOne(context.TODO(), bson.M{"title": title})
 	if result.Err() == mongo.ErrNoDocuments {
@@ -51,10 +49,14 @@ func (r MongoRepo) findByTitle(title string) *news.Preview {
 	return &preview
 }
 
-func NewMongoRepo(database *mongo.Database) MongoRepo {
-	return MongoRepo{database, database.Collection("news_previews")}
+func newMongoRepo(database *mongo.Database) mongoRepo {
+	return mongoRepo{database, database.Collection("news_previews")}
 }
 
-func init() {
-	Instance = NewMongoRepo(Database)
+func NewMongoKeeper() news.Keeper {
+	return newMongoRepo(Database)
+}
+
+func NewMongoFinder() news.Finder {
+	return newMongoRepo(Database)
 }

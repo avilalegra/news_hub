@@ -30,11 +30,11 @@ func GetLogger() *log.Logger {
 func GetCollector() news.Collector {
 	return news.Collector{
 		Providers: Providers,
-		Keeper:    persistence.Instance,
+		Keeper:    persistence.NewMongoKeeper(),
 		Logger:    GetLogger(),
 	}
 }
 
 func GetBrowser() news.Finder {
-	return persistence.Instance
+	return persistence.NewMongoFinder()
 }
