@@ -14,7 +14,7 @@ type Source struct {
 
 type Preview struct {
 	Title       string
-	Link        string ``
+	Link        string
 	Description string
 	Source      *Source
 }

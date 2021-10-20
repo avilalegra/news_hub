@@ -1,4 +1,4 @@
-package http
+package handler
 
 import (
 	"avilego.me/recent_news/news"
