@@ -17,6 +17,61 @@ func TestNewPreviewData(t *testing.T) {
 	}, prvData)
 }
 
+func TestNewSearchResponse(t *testing.T) {
+	for _, tData := range tsMakeSearchResponse {
+		response := newSearchResponse(tData.previews)
+		assert.Equal(t, tData.response, response)
+	}
+}
+
+var tsMakeSearchResponse = []struct {
+	previews []news.Preview
+	response searchResponse
+}{
+	{
+		previews[:2],
+		searchResponse{
+			Count: 2,
+			Data: searchData{
+				Sources: map[string]news.Source{
+					sources["phoronix"].Link: *sources["phoronix"],
+				},
+				Previews: []previewData{
+					newPreviewData(previews[0]),
+					newPreviewData(previews[1]),
+				},
+			},
+		},
+	},
+	{
+		previews[:3],
+		searchResponse{
+			Count: 3,
+			Data: searchData{
+				Sources: map[string]news.Source{
+					sources["phoronix"].Link: *sources["phoronix"],
+					sources["rtve"].Link:     *sources["rtve"],
+				},
+				Previews: []previewData{
+					newPreviewData(previews[0]),
+					newPreviewData(previews[1]),
+					newPreviewData(previews[2]),
+				},
+			},
+		},
+	},
+	{
+		previews[0:0],
+		searchResponse{
+			Count: 0,
+			Data: searchData{
+				Sources:  map[string]news.Source{},
+				Previews: []previewData{},
+			},
+		},
+	},
+}
+
 var sources = map[string]*news.Source{
 	"phoronix": {
 		Title:       `Phoronix`,
