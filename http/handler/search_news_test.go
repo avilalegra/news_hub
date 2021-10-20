@@ -36,8 +36,8 @@ var tsMakeSearchResponse = []struct {
 		searchResponse{
 			Count: 2,
 			Data: searchData{
-				Sources: map[string]news.Source{
-					sources["phoronix"].Link: *sources["phoronix"],
+				Sources: []news.Source{
+					*sources["phoronix"],
 				},
 				Previews: []previewData{
 					newPreviewData(previews[0]),
@@ -51,9 +51,9 @@ var tsMakeSearchResponse = []struct {
 		searchResponse{
 			Count: 3,
 			Data: searchData{
-				Sources: map[string]news.Source{
-					sources["phoronix"].Link: *sources["phoronix"],
-					sources["rtve"].Link:     *sources["rtve"],
+				Sources: []news.Source{
+					*sources["phoronix"],
+					*sources["rtve"],
 				},
 				Previews: []previewData{
 					newPreviewData(previews[0]),
@@ -68,7 +68,7 @@ var tsMakeSearchResponse = []struct {
 		searchResponse{
 			Count: 0,
 			Data: searchData{
-				Sources:  map[string]news.Source{},
+				Sources:  []news.Source{},
 				Previews: []previewData{},
 			},
 		},

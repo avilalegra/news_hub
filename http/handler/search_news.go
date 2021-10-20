@@ -12,7 +12,7 @@ type searchResponse struct {
 }
 
 type searchData struct {
-	Sources  map[string]news.Source
+	Sources  []news.Source
 	Previews []previewData
 }
 
@@ -33,12 +33,16 @@ func newPreviewData(preview news.Preview) previewData {
 }
 
 func newSearchResponse(previews []news.Preview) searchResponse {
-	sources := make(map[string]news.Source)
+	sourcesMap := make(map[string]news.Source)
+	sources := make([]news.Source, 0)
 	prvsData := make([]previewData, len(previews))
 
 	for i, preview := range previews {
-		sources[preview.Source.Link] = *preview.Source
+		sourcesMap[preview.Source.Link] = *preview.Source
 		prvsData[i] = newPreviewData(preview)
+	}
+	for _, v := range sourcesMap {
+		sources = append(sources, v)
 	}
 
 	return searchResponse{
