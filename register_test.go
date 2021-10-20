@@ -1,4 +1,4 @@
-package container
+package main
 
 import (
 	"avilego.me/recent_news/env"
@@ -10,7 +10,7 @@ import (
 
 func TestGetLogger(t *testing.T) {
 	os.Remove(env.LogFile())
-	logger := GetLogger()
+	logger := logger()
 
 	logger.Print("something went wrong")
 

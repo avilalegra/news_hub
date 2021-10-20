@@ -1,17 +1,16 @@
-package container
+package main
 
 import (
 	"avilego.me/recent_news/env"
 	"avilego.me/recent_news/news"
 	"avilego.me/recent_news/persistence"
 	"avilego.me/recent_news/rss"
-	"time"
-
 	"log"
 	"os"
+	"time"
 )
 
-var Providers = []news.AsyncProvider{
+var providers = []news.AsyncProvider{
 	rss.NewRssNewsProvider(
 		[]rss.Source{
 			rss.NewSource("http://api2.rtve.es/rss/temas_noticias.xml"),
@@ -22,19 +21,15 @@ var Providers = []news.AsyncProvider{
 	),
 }
 
-func GetLogger() *log.Logger {
+func logger() *log.Logger {
 	file, _ := os.OpenFile(env.LogFile(), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0600)
 	return log.New(file, "", log.LstdFlags)
 }
 
-func GetCollector() news.Collector {
+func collector() news.Collector {
 	return news.Collector{
-		Providers: Providers,
+		Providers: providers,
 		Keeper:    persistence.NewMongoKeeper(),
-		Logger:    GetLogger(),
+		Logger:    logger(),
 	}
-}
-
-func GetBrowser() news.Finder {
-	return persistence.NewMongoFinder()
 }

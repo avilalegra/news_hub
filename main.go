@@ -1,7 +1,6 @@
 package main
 
 import (
-	"avilego.me/recent_news/container"
 	"avilego.me/recent_news/persistence"
 	"context"
 	"time"
@@ -14,7 +13,7 @@ func main() {
 		}
 	}()
 
-	container.GetCollector().Run()
+	collector().Run()
 
 	// This is just for demo purposes
 	// Be sure to start containers: docker-compose up
