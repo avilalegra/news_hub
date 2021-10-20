@@ -1,6 +1,7 @@
 package main
 
 import (
+	"avilego.me/recent_news/factory"
 	"avilego.me/recent_news/persistence"
 	"context"
 	"time"
@@ -13,7 +14,7 @@ func main() {
 		}
 	}()
 
-	collector().Run()
+	factory.Collector().Run()
 
 	// This is just for demo purposes
 	// Be sure to start containers: docker-compose up

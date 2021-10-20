@@ -1,4 +1,4 @@
-package main
+package factory
 
 import (
 	"avilego.me/recent_news/env"
@@ -26,7 +26,7 @@ func logger() *log.Logger {
 	return log.New(file, "", log.LstdFlags)
 }
 
-func collector() news.Collector {
+func Collector() news.Collector {
 	return news.Collector{
 		Providers: providers,
 		Keeper:    persistence.NewMongoKeeper(),

@@ -1,4 +1,4 @@
-package main
+package factory
 
 import (
 	"avilego.me/recent_news/env"
