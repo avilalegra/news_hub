@@ -2,7 +2,10 @@ package http
 
 import (
 	"avilego.me/recent_news/news"
+	"encoding/json"
+	"fmt"
 	"github.com/stretchr/testify/assert"
+	"net/url"
 	"testing"
 )
 
@@ -69,6 +72,49 @@ var tsMakeSearchResponse = []struct {
 				Previews: []previewData{},
 			},
 		},
+	},
+}
+
+type finderMock struct {
+	t        *testing.T
+	keywords string
+	previews []news.Preview
+}
+
+func (b finderMock) Find(keywords string) []news.Preview {
+	if b.keywords != keywords {
+		assert.FailNow(b.t, fmt.Sprintf("finder called with keywords '%v', but '%v' was expected", keywords, b.keywords))
+	}
+	return b.previews
+}
+
+func TestSearch(t *testing.T) {
+	for _, tData := range tsSearch {
+		handler := searchHandler{finderMock{t, tData.keywords, tData.previews}}
+		params := url.Values{}
+		params.Set("keywords", tData.keywords)
+
+		expectedJson, _ := json.Marshal(newSearchResponse(tData.previews))
+
+		assert.HTTPBodyContains(t, handler.ServeHTTP, "GET", "/search", params, string(expectedJson))
+	}
+}
+
+var tsSearch = []struct {
+	keywords string
+	previews []news.Preview
+}{
+	{
+		"AMD",
+		previews[0:2],
+	},
+	{
+		"amd",
+		previews[0:2],
+	},
+	{
+		"",
+		previews[0:0],
 	},
 }
 

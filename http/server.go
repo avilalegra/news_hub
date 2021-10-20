@@ -2,6 +2,8 @@ package http
 
 import (
 	"avilego.me/recent_news/news"
+	"encoding/json"
+	"net/http"
 )
 
 type searchResponse struct {
@@ -45,5 +47,23 @@ func newSearchResponse(previews []news.Preview) searchResponse {
 			Sources:  sources,
 			Previews: prvsData,
 		},
+	}
+}
+
+type searchHandler struct {
+	finder news.Finder
+}
+
+func (h searchHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	expr := r.URL.Query().Get("keywords")
+	previews := h.finder.Find(expr)
+	searchResponse := newSearchResponse(previews)
+	jsonResponse, err := json.Marshal(searchResponse)
+	if err != nil {
+		panic(err)
+	}
+	_, err = w.Write(jsonResponse)
+	if err != nil {
+		panic(err)
 	}
 }
