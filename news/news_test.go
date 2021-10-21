@@ -1,7 +1,6 @@
 package news
 
 import (
-	"avilego.me/recent_news/news/newstest"
 	"errors"
 	"log"
 	"testing"
@@ -41,9 +40,9 @@ func (p ProviderMock) ProvideAsync(providers chan<- Preview, errs chan<- error) 
 func TestCollector(t *testing.T) {
 	r := &KeeperMock{}
 	triggerA := make(chan time.Time)
-	providerA := ProviderMock{triggerA, newstest.Previews[0:2], nil}
+	providerA := ProviderMock{triggerA, Previews[0:2], nil}
 	triggerB := make(chan time.Time)
-	providerB := ProviderMock{triggerB, newstest.Previews[2:], nil}
+	providerB := ProviderMock{triggerB, Previews[2:], nil}
 
 	collector := Collector{
 		[]AsyncProvider{providerA, providerB},
@@ -54,17 +53,17 @@ func TestCollector(t *testing.T) {
 
 	triggerA <- time.Now()
 	time.Sleep(1 * time.Millisecond)
-	assert.Equal(t, newstest.Previews[:2], r.Previews)
+	assert.Equal(t, Previews[:2], r.Previews)
 
 	triggerB <- time.Now()
 	time.Sleep(1 * time.Millisecond)
-	assert.Equal(t, newstest.Previews, r.Previews)
+	assert.Equal(t, Previews, r.Previews)
 }
 
 func TestProviderErrorLog(t *testing.T) {
 	r := new(KeeperMock)
 	triggerA := make(chan time.Time, 1)
-	providerA := ProviderMock{triggerA, newstest.Previews[0:1], nil}
+	providerA := ProviderMock{triggerA, Previews[0:1], nil}
 	triggerB := make(chan time.Time, 1)
 	providerB := ProviderMock{triggerB, nil, []error{errors.New("bad server response when fetching xml")}}
 	writerMock := new(WriterMock)

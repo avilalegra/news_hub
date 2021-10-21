@@ -20,12 +20,12 @@ var tsFinder = []struct {
 }{
 	{
 		"AMD",
-		Finder{"AMD", Previews[0:2]},
-		Previews[0:2],
+		Finder{"AMD", news.Previews[0:2]},
+		news.Previews[0:2],
 	},
 	{
 		"nothing",
-		Finder{"AMD", Previews[0:2]},
+		Finder{"AMD", news.Previews[0:2]},
 		nil,
 	},
 }

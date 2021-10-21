@@ -10,7 +10,7 @@ import (
 )
 
 func TestNewPreviewData(t *testing.T) {
-	preview := newstest.Previews[0]
+	preview := news.Previews[0]
 	prvData := newPreviewData(preview)
 	assert.Equal(t, previewData{
 		Title:       preview.Title,
@@ -44,39 +44,39 @@ var tsMakeSearchResponse = []struct {
 	response searchResponse
 }{
 	{
-		newstest.Previews[:2],
+		news.Previews[:2],
 		searchResponse{
 			Count: 2,
 			Data: searchData{
 				Sources: []news.Source{
-					*newstest.Sources["phoronix"],
+					*news.Sources["phoronix"],
 				},
 				Previews: []previewData{
-					newPreviewData(newstest.Previews[0]),
-					newPreviewData(newstest.Previews[1]),
+					newPreviewData(news.Previews[0]),
+					newPreviewData(news.Previews[1]),
 				},
 			},
 		},
 	},
 	{
-		newstest.Previews[:3],
+		news.Previews[:3],
 		searchResponse{
 			Count: 3,
 			Data: searchData{
 				Sources: []news.Source{
-					*newstest.Sources["phoronix"],
-					*newstest.Sources["rtve"],
+					*news.Sources["phoronix"],
+					*news.Sources["rtve"],
 				},
 				Previews: []previewData{
-					newPreviewData(newstest.Previews[0]),
-					newPreviewData(newstest.Previews[1]),
-					newPreviewData(newstest.Previews[2]),
+					newPreviewData(news.Previews[0]),
+					newPreviewData(news.Previews[1]),
+					newPreviewData(news.Previews[2]),
 				},
 			},
 		},
 	},
 	{
-		newstest.Previews[0:0],
+		news.Previews[0:0],
 		searchResponse{
 			Count: 0,
 			Data: searchData{
@@ -93,14 +93,14 @@ var tsSearch = []struct {
 }{
 	{
 		"AMD",
-		newstest.Previews[0:2],
+		news.Previews[0:2],
 	},
 	{
 		"amd",
-		newstest.Previews[0:2],
+		news.Previews[0:2],
 	},
 	{
 		"",
-		newstest.Previews[0:0],
+		news.Previews[0:0],
 	},
 }

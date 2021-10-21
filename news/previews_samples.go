@@ -1,8 +1,6 @@
-package newstest
+package news
 
-import "avilego.me/recent_news/news"
-
-var Sources = map[string]*news.Source{
+var Sources = map[string]*Source{
 	"phoronix": {
 		Title:       `Phoronix`,
 		Link:        `https://www.phoronix.com/`,
@@ -16,7 +14,7 @@ var Sources = map[string]*news.Source{
 	},
 }
 
-var Previews = []news.Preview{
+var Previews = []Preview{
 	{
 		Title:       `AMD Posts Code Enabling "Cyan Skillfish" Display Support Due To Different DCN2 Variant`,
 		Link:        `https://www.phoronix.com/scan.php?page=news_item&px=AMD-Cyan-Skillfish-DCN-2.01`,
