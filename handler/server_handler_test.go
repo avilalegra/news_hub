@@ -1,4 +1,4 @@
-package server
+package handler
 
 import (
 	"avilego.me/recent_news/factory"

@@ -2,8 +2,8 @@ package main
 
 import (
 	"avilego.me/recent_news/factory"
+	"avilego.me/recent_news/handler"
 	"avilego.me/recent_news/persistence"
-	"avilego.me/recent_news/server"
 	"context"
 	"log"
 	"net/http"
@@ -20,6 +20,6 @@ func main() {
 	factory.Collector().Run()
 
 	log.Fatal(
-		http.ListenAndServe(os.Getenv("ServerAddr"), server.NewServerHttpHandler()),
+		http.ListenAndServe(os.Getenv("ServerAddr"), handler.NewServerHttpHandler()),
 	)
 }
