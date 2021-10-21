@@ -29,7 +29,15 @@ func logger() *log.Logger {
 func Collector() news.Collector {
 	return news.Collector{
 		Providers: providers,
-		Keeper:    persistence.NewMongoKeeper(),
+		Keeper:    Keeper(),
 		Logger:    logger(),
 	}
+}
+
+func Finder() news.Finder {
+	return persistence.NewMongoFinder()
+}
+
+func Keeper() news.Keeper {
+	return persistence.NewMongoKeeper()
 }
