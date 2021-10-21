@@ -54,13 +54,13 @@ func newSearchResponse(previews []news.Preview) searchResponse {
 	}
 }
 
-type searchHandler struct {
-	finder news.Finder
+type SearchHandler struct {
+	Finder news.Finder
 }
 
-func (h searchHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h SearchHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	expr := r.URL.Query().Get("keywords")
-	previews := h.finder.Find(expr)
+	previews := h.Finder.Find(expr)
 	searchResponse := newSearchResponse(previews)
 	jsonResponse, err := json.Marshal(searchResponse)
 	if err != nil {
