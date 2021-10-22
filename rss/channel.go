@@ -6,7 +6,6 @@ import (
 	"encoding/xml"
 	"io"
 	"net/http"
-	"time"
 )
 
 type Source struct {
@@ -26,37 +25,6 @@ func (s Source) Fetch() (*Channel, error) {
 	return channel, nil
 }
 
-type NewsFetchResult struct {
-	previews []news.Preview
-	error    error
-}
-
-func NewSource(url string) Source {
-	return Source{
-		Url:        url,
-		HttpClient: DefaultHttpClient{},
-	}
-}
-
-type HttpClient interface {
-	Get(url string) ([]byte, error)
-}
-
-type DefaultHttpClient struct{}
-
-func (f DefaultHttpClient) Get(url string) ([]byte, error) {
-	resp, err := http.Get(url)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	return body, nil
-}
-
 type rss struct {
 	XMLName xml.Name `xml:"rss"`
 	Version string   `xml:"version,attr"`
@@ -64,13 +32,12 @@ type rss struct {
 }
 
 type Channel struct {
-	XMLName       xml.Name `xml:"channel"`
-	Title         string   `xml:"title"`
-	Link          string   `xml:"_ link"`
-	Description   string   `xml:"description"`
-	Language      string   `xml:"language"`
-	LastBuildDate Time     `xml:"lastBuildDate"`
-	Items         []Item   `xml:"item"`
+	XMLName     xml.Name `xml:"channel"`
+	Title       string   `xml:"title"`
+	Link        string   `xml:"_ link"`
+	Description string   `xml:"description"`
+	Language    string   `xml:"language"`
+	Items       []Item   `xml:"item"`
 }
 
 func (ch Channel) GetNews() []news.Preview {
@@ -106,10 +73,6 @@ func Parse(xmlText []byte) (*Channel, error) {
 	return &rss.Channel, err
 }
 
-type Time struct {
-	*time.Time
-}
-
 type Item struct {
 	XMLName     xml.Name `xml:"item"`
 	Title       string   `xml:"title"`
@@ -117,18 +80,30 @@ type Item struct {
 	Description string   `xml:"description"`
 }
 
-func (cht *Time) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
-	var timeExpr string
-	err := d.DecodeElement(&timeExpr, &start)
+type HttpClient interface {
+	Get(url string) ([]byte, error)
+}
+
+type DefaultHttpClient struct{}
+
+func (f DefaultHttpClient) Get(url string) ([]byte, error) {
+	resp, err := http.Get(url)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	parse, err := time.Parse(time.RFC1123, timeExpr)
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	cht.Time = &parse
-	return nil
+	return body, nil
+}
+
+func NewSource(url string) Source {
+	return Source{
+		Url:        url,
+		HttpClient: DefaultHttpClient{},
+	}
 }
 
 type Trimmer struct {

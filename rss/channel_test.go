@@ -3,11 +3,9 @@ package rss
 import (
 	"errors"
 	"fmt"
-	"testing"
-	"time"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"testing"
 )
 
 func TestRssParsing(t *testing.T) {
@@ -72,7 +70,6 @@ func assertChannelEquals(t *testing.T, expected Channel, actual *Channel) {
 	assert.Equal(t, expected.Link, actual.Link, "Link parsing error")
 	assert.Equal(t, expected.Description, actual.Description, "Description parsing error")
 	assert.Equal(t, expected.Language, actual.Language, "Language parsing error")
-	assert.Equal(t, expected.LastBuildDate, actual.LastBuildDate, "LastBuildDate parsing error")
 
 	for i, expitem := range expected.Items {
 		assert.Equal(t, expitem.Title, actual.Items[i].Title, "Item title parsing error")
@@ -88,11 +85,6 @@ type HttpClientMock struct {
 func (m *HttpClientMock) Get(url string) ([]byte, error) {
 	args := m.Called(url)
 	return args.Get(0).([]byte), args.Error(1)
-}
-
-func parseTime(timeExpr string) *time.Time {
-	ptime, _ := time.Parse(time.RFC1123, timeExpr)
-	return &ptime
 }
 
 type chanSample struct {
@@ -171,21 +163,19 @@ var chanSamples = []chanSample{
 	{
 		`<?xml version="1.0" encoding="UTF-8"?><rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:media="http://search.yahoo.com/mrss/" xmlns:nyt="http://www.nytimes.com/namespaces/rss/2.0" version="2.0"><channel><title>NYT &gt; Top Stories</title><link>https://www.nytimes.com</link><description>NYT rss description</description><language>en-us</language><lastBuildDate>Sun, 19 Sep 2021 06:27:36 +0000</lastBuildDate><image><title>NYT > Top Stories</title><url>https://static01.nyt.com/images/misc/NYT_logo_rss_250x40.png</url><link>https://www.nytimes.com</link></image></channel></rss>`,
 		Channel{
-			Title:         `NYT > Top Stories`,
-			Link:          `https://www.nytimes.com`,
-			Description:   `NYT rss description`,
-			Language:      "en-us",
-			LastBuildDate: Time{Time: parseTime(`Sun, 19 Sep 2021 06:27:36 +0000`)},
+			Title:       `NYT > Top Stories`,
+			Link:        `https://www.nytimes.com`,
+			Description: `NYT rss description`,
+			Language:    "en-us",
 		},
 	},
 	{
 		`<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/" xmlns:feedburner="http://rssnamespace.org/feedburner/ext/1.0" version="2.0"><channel><title><![CDATA[CNN.com - RSS Channel - World]]></title><description><![CDATA[CNN.com delivers up-to-the-minute news and information on the latest top stories, weather, entertainment, politics and more.]]></description><link>https://www.cnn.com/world/index.html</link><image><url>http://i2.cdn.turner.com/cnn/2015/images/09/24/cnn.digital.png</url><title>CNN.com - RSS Channel - World</title><link>https://www.cnn.com/world/index.html</link></image><lastBuildDate>Mon, 27 Sep 2021 13:54:35 GMT</lastBuildDate><pubDate>Thu, 16 Sep 2021 15:14:25 GMT</pubDate><language><![CDATA[en-US]]></language><atom10:link xmlns:atom10="http://www.w3.org/2005/Atom" rel="self" type="application/rss+xml" href="http://rss.cnn.com/rss/edition_world" /></channel></rss>`,
 		Channel{
-			Title:         `CNN.com - RSS Channel - World`,
-			Link:          `https://www.cnn.com/world/index.html`,
-			Language:      `en-US`,
-			Description:   `CNN.com delivers up-to-the-minute news and information on the latest top stories, weather, entertainment, politics and more.`,
-			LastBuildDate: Time{Time: parseTime(`Mon, 27 Sep 2021 13:54:35 GMT`)},
+			Title:       `CNN.com - RSS Channel - World`,
+			Link:        `https://www.cnn.com/world/index.html`,
+			Language:    `en-US`,
+			Description: `CNN.com delivers up-to-the-minute news and information on the latest top stories, weather, entertainment, politics and more.`,
 		},
 	},
 	{
