@@ -3,14 +3,19 @@ package handler
 import (
 	"avilego.me/recent_news/factory"
 	"avilego.me/recent_news/news"
+	"avilego.me/recent_news/persistence"
 	"github.com/stretchr/testify/assert"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 )
 
+//TODO: remove time waiting
 func TestServerHandlerSearch(t *testing.T) {
+	persistence.RecreateDb()
+	<-time.After(1000 * time.Millisecond)
 	loadDbFixtures()
 	server := httptest.NewServer(NewServerHttpHandler())
 	defer server.Close()
