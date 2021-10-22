@@ -2,6 +2,7 @@ package handler
 
 import (
 	"avilego.me/recent_news/factory"
+	"avilego.me/recent_news/handler/api"
 	"net/http"
 )
 
@@ -12,5 +13,5 @@ func NewServerHttpHandler() http.Handler {
 }
 
 func configRoutes(mux *http.ServeMux) {
-	mux.Handle("/search", SearchHandler{Finder: factory.Finder()})
+	mux.Handle("/api/search", api.ApiSearchHandler{Finder: factory.Finder()})
 }

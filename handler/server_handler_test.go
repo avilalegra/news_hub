@@ -13,14 +13,14 @@ import (
 )
 
 //TODO: remove time waiting
-func TestServerHandlerSearch(t *testing.T) {
+func TestApiSearch(t *testing.T) {
 	persistence.RecreateDb()
 	<-time.After(1000 * time.Millisecond)
 	loadDbFixtures()
 	server := httptest.NewServer(NewServerHttpHandler())
 	defer server.Close()
 
-	resp, err := http.Get(server.URL + "/search?keywords=AMD")
+	resp, err := http.Get(server.URL + "/api/search?keywords=AMD")
 	if err != nil {
 		panic(err)
 	}

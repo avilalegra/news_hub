@@ -1,4 +1,4 @@
-package handler
+package api
 
 import (
 	"avilego.me/recent_news/news"
@@ -54,11 +54,11 @@ func newSearchResponse(previews []news.Preview) searchResponse {
 	}
 }
 
-type SearchHandler struct {
+type ApiSearchHandler struct {
 	Finder news.Finder
 }
 
-func (h SearchHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h ApiSearchHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	expr := r.URL.Query().Get("keywords")
 	previews := h.Finder.Find(expr)
 	searchResponse := newSearchResponse(previews)
