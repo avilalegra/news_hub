@@ -16,13 +16,23 @@ var Database *mongo.Database
 
 func init() {
 	setClient()
-	RecreateDb()
+	setDb()
+	if !dbExists() {
+		RecreateDb()
+	}
+}
+
+func dbExists() bool {
+	dbNames, err := Client.ListDatabaseNames(context.TODO(), bson.M{"name": os.Getenv("DbName")})
+	if err != nil {
+		panic(err)
+	}
+	return len(dbNames) == 1
 }
 
 func setClient() {
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(os.Getenv("MongoUri")))
-
 	if err != nil {
 		panic(err)
 	}
@@ -30,12 +40,14 @@ func setClient() {
 	if err != nil {
 		panic(err)
 	}
-
 	Client = client
 }
 
-func RecreateDb() {
+func setDb() {
 	Database = Client.Database(os.Getenv("DbName"))
+}
+
+func RecreateDb() {
 	err := Database.Drop(context.TODO())
 	if err != nil {
 		panic(err)
