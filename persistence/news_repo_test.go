@@ -8,7 +8,10 @@ import (
 	"testing"
 )
 
-func TestAdd(t *testing.T) {
+func TestAddIntegration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
 	RecreateDb()
 	var prevs []news.Preview
 	prevCol := Database.Collection("news_previews")
@@ -28,7 +31,10 @@ func TestAdd(t *testing.T) {
 	assert.ErrorIs(t, err, news.PrevExistsErr{PreviewTitle: news.Previews[1].Title})
 }
 
-func TestFindByTitle(t *testing.T) {
+func TestFindByTitleIntegration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
 	RecreateDb()
 	repo := newMongoRepo(Database)
 	prevCol := Database.Collection("news_previews")
@@ -41,7 +47,10 @@ func TestFindByTitle(t *testing.T) {
 	}
 }
 
-func TestSearch(t *testing.T) {
+func TestSearchIntegration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
 	RecreateDb()
 	finder := NewMongoFinder()
 	prevCol := Database.Collection("news_previews")

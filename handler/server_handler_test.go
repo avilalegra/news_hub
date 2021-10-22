@@ -9,13 +9,13 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 )
 
-//TODO: remove time waiting
-func TestApiSearch(t *testing.T) {
+func TestApiSearchIntegration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
 	persistence.RecreateDb()
-	<-time.After(1000 * time.Millisecond)
 	loadDbFixtures()
 	server := httptest.NewServer(NewServerHttpHandler())
 	defer server.Close()
