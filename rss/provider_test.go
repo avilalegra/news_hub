@@ -3,6 +3,7 @@ package rss
 import (
 	"avilego.me/recent_news/news"
 	"errors"
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -10,34 +11,37 @@ import (
 
 //TODO: Simplify this test
 func TestRssProvider(t *testing.T) {
-	for _, tData := range tsRssProvider {
-		trigger := make(chan time.Time, 2)
-		previewsChan := make(chan news.Preview, 10)
-		errorsChan := make(chan error, 10)
-		var previews []news.Preview
-		var errs []error
-		provider := NewRssNewsProvider(tData.sources, trigger)
+	for i, tData := range tsRssProvider {
+		t.Run(fmt.Sprintf("sample %d", i), func(t *testing.T) {
+			t.Parallel()
+			trigger := make(chan time.Time, 2)
+			previewsChan := make(chan news.Preview, 10)
+			errorsChan := make(chan error, 10)
+			var previews []news.Preview
+			var errs []error
+			provider := NewRssNewsProvider(tData.sources, trigger)
 
-		provider.ProvideAsync(previewsChan, errorsChan)
+			provider.ProvideAsync(previewsChan, errorsChan)
 
-		trigger <- time.Now()
-		trigger <- time.Now()
-		close(trigger)
+			trigger <- time.Now()
+			trigger <- time.Now()
+			close(trigger)
 
-		for i := 0; i < len(tData.previews)*2; i++ {
-			previews = append(previews, <-previewsChan)
-		}
+			for i := 0; i < len(tData.previews)*2; i++ {
+				previews = append(previews, <-previewsChan)
+			}
 
-		for i := 0; i < len(tData.errors)*2; i++ {
-			errs = append(errs, <-errorsChan)
-		}
+			for i := 0; i < len(tData.errors)*2; i++ {
+				errs = append(errs, <-errorsChan)
+			}
 
-		assert.Equal(t, len(tData.previews)*2, len(previews))
-		for _, preview := range previews {
-			assert.Contains(t, tData.previews, preview)
-		}
+			assert.Equal(t, len(tData.previews)*2, len(previews))
+			for _, preview := range previews {
+				assert.Contains(t, tData.previews, preview)
+			}
 
-		assert.Equal(t, len(tData.errors)*2, len(errs))
+			assert.Equal(t, len(tData.errors)*2, len(errs))
+		})
 	}
 }
 

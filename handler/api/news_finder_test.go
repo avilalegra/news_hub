@@ -4,6 +4,7 @@ import (
 	"avilego.me/recent_news/news"
 	"avilego.me/recent_news/news/newstest"
 	"encoding/json"
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"net/url"
 	"testing"
@@ -21,21 +22,27 @@ func TestNewPreviewData(t *testing.T) {
 }
 
 func TestNewSearchResponse(t *testing.T) {
-	for _, tData := range tsMakeSearchResponse {
-		response := newSearchResponse(tData.previews)
-		assert.Equal(t, tData.response, response)
+	for i, tData := range tsMakeSearchResponse {
+		t.Run(fmt.Sprintf("sample %d", i), func(t *testing.T) {
+			t.Parallel()
+			response := newSearchResponse(tData.previews)
+			assert.Equal(t, tData.response, response)
+		})
 	}
 }
 
 func TestSearch(t *testing.T) {
-	for _, tData := range tsSearch {
-		handler := ApiSearchHandler{newstest.Finder{Keywords: tData.keywords, Previews: tData.previews}}
-		params := url.Values{}
-		params.Set("keywords", tData.keywords)
+	for i, tData := range tsSearch {
+		t.Run(fmt.Sprintf("sample %d", i), func(t *testing.T) {
+			t.Parallel()
+			handler := ApiSearchHandler{newstest.Finder{Keywords: tData.keywords, Previews: tData.previews}}
+			params := url.Values{}
+			params.Set("keywords", tData.keywords)
 
-		expectedJson, _ := json.Marshal(newSearchResponse(tData.previews))
+			expectedJson, _ := json.Marshal(newSearchResponse(tData.previews))
 
-		assert.HTTPBodyContains(t, handler.ServeHTTP, "GET", "/search", params, string(expectedJson))
+			assert.HTTPBodyContains(t, handler.ServeHTTP, "GET", "/search", params, string(expectedJson))
+		})
 	}
 }
 

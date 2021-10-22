@@ -9,46 +9,54 @@ import (
 )
 
 func TestRssParsing(t *testing.T) {
-	for _, tData := range tsParseChannelTests() {
-		result, e := Parse([]byte(tData.xml))
+	for i, tData := range tsParseChannelTests() {
+		t.Run(fmt.Sprintf("sample %d", i), func(t *testing.T) {
+			t.Parallel()
+			result, e := Parse([]byte(tData.xml))
 
-		switch v := tData.result.(type) {
-		case Channel:
-			assertChannelEquals(t, v, result)
-		case error:
-			assert.Error(t, e)
-		default:
-			fmt.Println(v)
-		}
-
+			switch v := tData.result.(type) {
+			case Channel:
+				assertChannelEquals(t, v, result)
+			case error:
+				assert.Error(t, e)
+			default:
+				fmt.Println(v)
+			}
+		})
 	}
 }
 
 func TestFetchChannel(t *testing.T) {
-	for _, tData := range tsFetchChannel() {
-		result, e := tData.source.Fetch()
+	for i, tData := range tsFetchChannel() {
+		t.Run(fmt.Sprintf("sample %d", i), func(t *testing.T) {
+			t.Parallel()
+			result, e := tData.source.Fetch()
 
-		switch v := tData.result.(type) {
-		case *Channel:
-			assertChannelEquals(t, *v, result)
-		case error:
-			assert.Error(t, e)
-		}
+			switch v := tData.result.(type) {
+			case *Channel:
+				assertChannelEquals(t, *v, result)
+			case error:
+				assert.Error(t, e)
+			}
+		})
 	}
 }
 
 func TestGetChannelNews(t *testing.T) {
-	for _, channel := range channelNewsTests {
-		for i, chanNews := range channel.GetNews() {
-			assert.Equal(t, channel.Title, chanNews.Source.Title)
-			assert.Equal(t, channel.Link, chanNews.Source.Link)
-			assert.Equal(t, channel.Language, chanNews.Source.Language)
-			assert.Equal(t, channel.Description, chanNews.Source.Description)
+	for i, channel := range channelNewsTests {
+		t.Run(fmt.Sprintf("sample %d", i), func(t *testing.T) {
+			t.Parallel()
+			for i, chanNews := range channel.GetNews() {
+				assert.Equal(t, channel.Title, chanNews.Source.Title)
+				assert.Equal(t, channel.Link, chanNews.Source.Link)
+				assert.Equal(t, channel.Language, chanNews.Source.Language)
+				assert.Equal(t, channel.Description, chanNews.Source.Description)
 
-			assert.Equal(t, channel.Items[i].Title, chanNews.Title)
-			assert.Equal(t, channel.Items[i].Link, chanNews.Link)
-			assert.Equal(t, channel.Items[i].Description, chanNews.Description)
-		}
+				assert.Equal(t, channel.Items[i].Title, chanNews.Title)
+				assert.Equal(t, channel.Items[i].Link, chanNews.Link)
+				assert.Equal(t, channel.Items[i].Description, chanNews.Description)
+			}
+		})
 	}
 }
 
