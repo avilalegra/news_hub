@@ -15,6 +15,9 @@ var Client *mongo.Client
 var Database *mongo.Database
 
 func init() {
+	if os.Getenv("SKIP_DB_INIT") == "true" {
+		return
+	}
 	setClient()
 	setDb()
 	if !dbExists() {
