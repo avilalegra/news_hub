@@ -45,7 +45,6 @@ type Collector struct {
 	Logger    *log.Logger
 }
 
-//TODO: Reduce cyclomatic complexity
 func (c Collector) Run() {
 	prvChan := make(chan Preview)
 	errChan := make(chan error)
@@ -58,12 +57,11 @@ func (c Collector) Run() {
 		for {
 			select {
 			case preview := <-prvChan:
-				err := c.Keeper.Store(preview)
-				if err == nil {
-					c.Logger.Printf("news preview added: %s\n", preview.Title)
+				if err := c.Keeper.Store(preview); err != nil {
+					c.Logger.Println(err)
 				}
 			case err := <-errChan:
-				c.Logger.Printf("provider error: %s\n", err)
+				c.Logger.Println(err)
 			}
 		}
 	}()

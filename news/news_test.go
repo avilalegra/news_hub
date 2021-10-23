@@ -11,11 +11,23 @@ import (
 
 type KeeperMock struct {
 	Previews []Preview
+	Error    error
 }
 
 func (r *KeeperMock) Store(preview Preview) error {
+	if r.Error != nil {
+		return r.Error
+	}
 	r.Previews = append(r.Previews, preview)
 	return nil
+}
+
+func NewMockKeeper() *KeeperMock {
+	return &KeeperMock{make([]Preview, 0), nil}
+}
+
+func NewFailingMockKeeper(err error) *KeeperMock {
+	return &KeeperMock{make([]Preview, 0), err}
 }
 
 type ProviderMock struct {
@@ -60,30 +72,39 @@ func TestCollector(t *testing.T) {
 	assert.Equal(t, Previews, r.Previews)
 }
 
-func TestProviderErrorLog(t *testing.T) {
-	r := new(KeeperMock)
-	triggerA := make(chan time.Time, 1)
-	providerA := ProviderMock{triggerA, Previews[0:1], nil}
-	triggerB := make(chan time.Time, 1)
-	providerB := ProviderMock{triggerB, nil, []error{errors.New("bad server response when fetching xml")}}
+func TestCollectorLogsProvidersErrors(t *testing.T) {
+	trigger := make(chan time.Time, 1)
+	provider := ProviderMock{trigger, nil, []error{errors.New("error fetching from source: rtve")}}
 	writerMock := new(WriterMock)
-	logger := log.New(writerMock, "", log.LstdFlags)
-
 	collector := Collector{
-		[]AsyncProvider{providerA, providerB},
-		r,
-		logger,
+		[]AsyncProvider{provider},
+		NewMockKeeper(),
+		log.New(writerMock, "", log.LstdFlags),
 	}
 
 	collector.Run()
 
-	triggerA <- time.Now()
+	trigger <- time.Now()
 	time.Sleep(1 * time.Millisecond)
-	assert.Contains(t, writerMock.msg, `news preview added: AMD Posts Code Enabling "Cyan Skillfish" Display Support Due To Different DCN2 Variant`)
+	assert.Contains(t, writerMock.msg, "error fetching from source: rtve")
+}
 
-	triggerB <- time.Now()
+func TestCollectorLogsKeeperErrors(t *testing.T) {
+	keeperErr := errors.New("couldn't save preview")
+	trigger := make(chan time.Time, 1)
+	provider := ProviderMock{trigger, Previews, nil}
+	writerMock := new(WriterMock)
+	collector := Collector{
+		[]AsyncProvider{provider},
+		NewFailingMockKeeper(keeperErr),
+		log.New(writerMock, "", log.LstdFlags),
+	}
+
+	collector.Run()
+
+	trigger <- time.Now()
 	time.Sleep(1 * time.Millisecond)
-	assert.Contains(t, writerMock.msg, "bad server response when fetching xml")
+	assert.Contains(t, writerMock.msg, "couldn't save preview")
 }
 
 type WriterMock struct {
