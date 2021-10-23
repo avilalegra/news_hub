@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/stretchr/testify/assert"
+	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"testing"
 )
@@ -38,10 +40,16 @@ func TestSearch(t *testing.T) {
 			handler := ApiSearchHandler{newstest.Finder{Keywords: tData.keywords, Previews: tData.previews}}
 			params := url.Values{}
 			params.Set("keywords", tData.keywords)
-
 			expectedJson, _ := json.Marshal(newSearchResponse(tData.previews))
 
-			assert.HTTPBodyContains(t, handler.ServeHTTP, "GET", "/search", params, string(expectedJson))
+			request, _ := http.NewRequest("GET", "/api/search?keywords="+tData.keywords, nil)
+			resp := httptest.NewRecorder()
+
+			handler.ServeHTTP(resp, request)
+
+			assert.Equal(t, 200, resp.Code)
+			assert.Equal(t, "application/json", resp.Header().Get("Content-Type"))
+			assert.Contains(t, string(expectedJson), resp.Body.String())
 		})
 	}
 }
