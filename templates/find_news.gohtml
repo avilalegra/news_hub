@@ -1,0 +1,32 @@
+{{template "base" .}}
+
+{{define "title"}}Find news{{end}}
+
+{{define "body"}}
+
+<main id="find_news_page">
+    <div class="news-finder">
+        <form method="get">
+            <input type="text" name="keywords" value="{{.Keywords}}">
+            <button>Search</button>
+        </form>
+    </div>
+
+    <ul class="news-previews-results">
+        {{range .Previews}}
+        <li class="news-preview">
+            <a target="_blank" href="{{.Link}}">
+                <div class="preview-title">
+                    {{.Title}}
+                </div>
+            </a>
+            <div class="preview-description">
+                {{.Description | unsafe}}
+            </div>
+        </li>
+
+        {{end}}
+    </ul>
+</main>
+
+{{end}}

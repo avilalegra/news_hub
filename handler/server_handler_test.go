@@ -29,6 +29,25 @@ func TestApiSearchIntegration(t *testing.T) {
 	assert.Equal(t, "application/json", resp.Header.Get("Content-Type"))
 }
 
+func TestWebSearchAvailabilityIntegration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+	persistence.RecreateDb()
+	loadDbFixtures()
+	server := httptest.NewServer(NewServerHttpHandler())
+	defer server.Close()
+
+	resp, err := http.Get(server.URL + "/news")
+	if err != nil {
+		panic(err)
+	}
+
+	assert.Equal(t, 200, resp.StatusCode)
+	assert.Equal(t, "text/html; charset=utf-8", resp.Header.Get("Content-Type"))
+	assert.NotEqual(t, 0, resp.ContentLength)
+}
+
 func loadDbFixtures() {
 	keeper := factory.Keeper()
 	keeper.Store(news.Previews[0])
