@@ -22,7 +22,7 @@ func init() {
 }
 
 func getAppEnv() string {
-	env := os.Getenv("APP_ENV_FALLBACK")
+	env := os.Getenv("RNews_ENV")
 	if "" == env {
 		env = AppEnvFallback
 	}
