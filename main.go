@@ -5,6 +5,7 @@ import (
 	"avilego.me/recent_news/handler"
 	"avilego.me/recent_news/persistence"
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -18,6 +19,9 @@ func main() {
 	}()
 
 	factory.Collector().Run()
+
+	fmt.Printf("App running at: %s\n", os.Getenv("ServerAddr"))
+	fmt.Println("Mongo express running at: localhost:8081")
 
 	log.Fatal(
 		http.ListenAndServe(os.Getenv("ServerAddr"), handler.NewServerHttpHandler()),
