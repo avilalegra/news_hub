@@ -9,7 +9,7 @@ import (
 	"runtime"
 )
 
-var AppEnvFallback = "test"
+var AppEnvFallback = "dev"
 
 func init() {
 	envDir := ProjDir() + "/env"
