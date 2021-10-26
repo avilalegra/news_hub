@@ -1,1 +1,14 @@
-@import url("reset_rules.css");
+.preview-description  img {
+    margin-bottom: 15px;
+}
+
+@media (min-width: 768px) {
+    .preview-description  img {
+        max-width: 25%;
+        padding: 10px;
+    }
+}
+
+preview {
+    display: block;
+}
