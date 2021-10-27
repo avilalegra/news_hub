@@ -10,7 +10,7 @@ func TestGetAppEnv(t *testing.T) {
 	AppEnvFallback = "dev"
 	assert.Equal(t, getAppEnv(), "dev")
 
-	os.Setenv("APP_ENV", "prod")
+	os.Setenv("RNews_ENV", "prod")
 	assert.Equal(t, getAppEnv(), "prod")
 }
 
