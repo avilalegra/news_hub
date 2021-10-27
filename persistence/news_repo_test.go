@@ -13,19 +13,13 @@ func TestStorePersistDataIntegration(t *testing.T) {
 		t.Skip("skipping integration test")
 	}
 	RecreateDb()
-	var prevs []news.Preview
 	preview := news.Previews[0]
-	prevCol := Database.Collection("news_previews")
 	keeper := newMongoRepo(Database, newTimeProviderMock(preview.RegUnixTime))
-	cursor, _ := prevCol.Find(context.TODO(), bson.M{})
-	cursor.All(context.TODO(), &prevs)
-	assert.Equal(t, 0, len(prevs))
 
 	keeper.Store(news.Previews[0])
-
-	cursor, _ = prevCol.Find(context.TODO(), bson.D{{}})
-	cursor.All(context.TODO(), &prevs)
-	assert.Equal(t, news.Previews[0], prevs[0])
+	expects := getAllStoredPreviews()
+	assert.Equal(t, 1, len(expects))
+	assert.Equal(t, news.Previews[0], expects[0])
 }
 
 func TestStoreDuplicatesReturnErrorIntegration(t *testing.T) {
@@ -34,6 +28,7 @@ func TestStoreDuplicatesReturnErrorIntegration(t *testing.T) {
 	}
 	RecreateDb()
 	keeper := NewMongoKeeper()
+
 	keeper.Store(news.Previews[1])
 	err := keeper.Store(news.Previews[1])
 	assert.ErrorIs(t, err, news.PrevExistsErr{PreviewTitle: news.Previews[1].Title})
@@ -44,18 +39,12 @@ func TestRegTimeSetOnStoringIntegration(t *testing.T) {
 		t.Skip("skipping integration test")
 	}
 	RecreateDb()
-	var prevs []news.Preview
-	prevCol := Database.Collection("news_previews")
-	keeper := newMongoRepo(Database, newTimeProviderMock(123456))
 	preview := news.Previews[2]
+	keeper := newMongoRepo(Database, newTimeProviderMock(123456))
 
 	keeper.Store(preview)
-
-	cursor, _ := prevCol.Find(context.TODO(), bson.M{})
-	cursor, _ = prevCol.Find(context.TODO(), bson.D{{}})
-	cursor.All(context.TODO(), &prevs)
-
-	assert.Equal(t, int64(123456), prevs[0].RegUnixTime)
+	expected := getAllStoredPreviews()[0]
+	assert.Equal(t, int64(123456), expected.RegUnixTime)
 }
 
 func TestFindByTitleIntegration(t *testing.T) {
@@ -64,10 +53,7 @@ func TestFindByTitleIntegration(t *testing.T) {
 	}
 	RecreateDb()
 	repo := newMongoRepo(Database, nil)
-	prevCol := Database.Collection("news_previews")
-	prevCol.InsertOne(context.TODO(), news.Previews[0])
-	prevCol.InsertOne(context.TODO(), news.Previews[1])
-
+	loadDbFixtures()
 	for _, tData := range tsFindByTitle {
 		preview := repo.findByTitle(tData.Title)
 		assert.Equal(t, tData.Preview, preview)
@@ -79,14 +65,29 @@ func TestSearchIntegration(t *testing.T) {
 		t.Skip("skipping integration test")
 	}
 	RecreateDb()
-	finder := NewMongoFinder()
-	prevCol := Database.Collection("news_previews")
-	for _, preview := range news.Previews {
-		prevCol.InsertOne(context.TODO(), preview)
-	}
+	repo := newMongoRepo(Database, nil)
+	loadDbFixtures()
 	for _, tData := range tsSearch {
-		results := finder.Find(tData.keywords)
+		results := repo.Find(tData.keywords)
 		assert.Equal(t, tData.count, len(results), tData.keywords)
+	}
+}
+
+func getAllStoredPreviews() (prevs []news.Preview) {
+	prevCol := Database.Collection("news_previews")
+	cursor, _ := prevCol.Find(context.TODO(), bson.M{})
+	err := cursor.All(context.TODO(), &prevs)
+	if err != nil {
+		panic(err)
+	}
+	return
+}
+
+func loadDbFixtures() {
+	repo := newMongoRepo(Database, nil)
+	for _, preview := range news.Previews {
+		repo.timeProvider = newTimeProviderMock(preview.RegUnixTime)
+		repo.Store(preview)
 	}
 }
 
@@ -144,7 +145,7 @@ var tsFindByTitle = []struct {
 		&news.Previews[1],
 	},
 	{
-		`Linux 5.16 To Bring Initial DisplayPort 2.0`,
+		`Linux 5.16 To Bring Initial`, //test incomplete title
 		nil,
 	},
 	{
