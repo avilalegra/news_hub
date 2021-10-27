@@ -17,6 +17,7 @@ type Preview struct {
 	Link        string
 	Description string
 	Source      *Source
+	RegUnixTime int64
 }
 
 type AsyncProvider interface {

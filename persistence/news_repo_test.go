@@ -14,18 +14,18 @@ func TestStorePersistDataIntegration(t *testing.T) {
 	}
 	RecreateDb()
 	var prevs []news.Preview
+	preview := news.Previews[0]
 	prevCol := Database.Collection("news_previews")
-	keeper := NewMongoKeeper()
+	keeper := newMongoRepo(Database, newTimeProviderMock(preview.RegUnixTime))
 	cursor, _ := prevCol.Find(context.TODO(), bson.M{})
 	cursor.All(context.TODO(), &prevs)
 	assert.Equal(t, 0, len(prevs))
 
 	keeper.Store(news.Previews[0])
-	keeper.Store(news.Previews[1])
 
 	cursor, _ = prevCol.Find(context.TODO(), bson.D{{}})
 	cursor.All(context.TODO(), &prevs)
-	assert.Equal(t, news.Previews[0:2], prevs)
+	assert.Equal(t, news.Previews[0], prevs[0])
 }
 
 func TestStoreDuplicatesReturnErrorIntegration(t *testing.T) {
@@ -39,12 +39,31 @@ func TestStoreDuplicatesReturnErrorIntegration(t *testing.T) {
 	assert.ErrorIs(t, err, news.PrevExistsErr{PreviewTitle: news.Previews[1].Title})
 }
 
+func TestRegTimeSetOnStoringIntegration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+	RecreateDb()
+	var prevs []news.Preview
+	prevCol := Database.Collection("news_previews")
+	keeper := newMongoRepo(Database, newTimeProviderMock(123456))
+	preview := news.Previews[2]
+
+	keeper.Store(preview)
+
+	cursor, _ := prevCol.Find(context.TODO(), bson.M{})
+	cursor, _ = prevCol.Find(context.TODO(), bson.D{{}})
+	cursor.All(context.TODO(), &prevs)
+
+	assert.Equal(t, int64(123456), prevs[0].RegUnixTime)
+}
+
 func TestFindByTitleIntegration(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test")
 	}
 	RecreateDb()
-	repo := newMongoRepo(Database)
+	repo := newMongoRepo(Database, nil)
 	prevCol := Database.Collection("news_previews")
 	prevCol.InsertOne(context.TODO(), news.Previews[0])
 	prevCol.InsertOne(context.TODO(), news.Previews[1])
@@ -68,6 +87,12 @@ func TestSearchIntegration(t *testing.T) {
 	for _, tData := range tsSearch {
 		results := finder.Find(tData.keywords)
 		assert.Equal(t, tData.count, len(results), tData.keywords)
+	}
+}
+
+var newTimeProviderMock = func(time int64) unixTimeProvider {
+	return func() int64 {
+		return time
 	}
 }
 

@@ -5,17 +5,20 @@ import (
 	"context"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"time"
 )
 
 type mongoRepo struct {
-	Db      *mongo.Database
-	prevCol *mongo.Collection
+	Db           *mongo.Database
+	prevCol      *mongo.Collection
+	timeProvider unixTimeProvider
 }
 
 func (r mongoRepo) Store(preview news.Preview) error {
 	if prev := r.findByTitle(preview.Title); prev != nil {
 		return news.PrevExistsErr{PreviewTitle: prev.Title}
 	}
+	preview.RegUnixTime = r.timeProvider()
 	if _, err := r.prevCol.InsertOne(context.TODO(), preview); err != nil {
 		panic(err)
 	}
@@ -49,14 +52,20 @@ func (r mongoRepo) findByTitle(title string) *news.Preview {
 	return &preview
 }
 
-func newMongoRepo(database *mongo.Database) mongoRepo {
-	return mongoRepo{database, database.Collection("news_previews")}
+func newMongoRepo(database *mongo.Database, timeProvider unixTimeProvider) mongoRepo {
+	return mongoRepo{database, database.Collection("news_previews"), timeProvider}
 }
 
 func NewMongoKeeper() news.Keeper {
-	return newMongoRepo(Database)
+	return newMongoRepo(Database, defaultTimeProvider)
 }
 
 func NewMongoFinder() news.Finder {
-	return newMongoRepo(Database)
+	return newMongoRepo(Database, defaultTimeProvider)
+}
+
+type unixTimeProvider func() int64
+
+var defaultTimeProvider = func() int64 {
+	return time.Now().Unix()
 }

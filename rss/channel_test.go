@@ -55,6 +55,7 @@ func TestGetChannelNews(t *testing.T) {
 				assert.Equal(t, channel.Items[i].Title, chanNews.Title)
 				assert.Equal(t, channel.Items[i].Link, chanNews.Link)
 				assert.Equal(t, channel.Items[i].Description, chanNews.Description)
+				assert.Equal(t, int64(0), chanNews.RegUnixTime)
 			}
 		})
 	}
