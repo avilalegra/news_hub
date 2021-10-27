@@ -57,7 +57,7 @@ func TestSearchIntegration(t *testing.T) {
 	for _, preview := range news.Previews {
 		prevCol.InsertOne(context.TODO(), preview)
 	}
-	for _, tData := range tsSearch[6:7] {
+	for _, tData := range tsSearch {
 		results := finder.Find(tData.keywords)
 		assert.Equal(t, tData.count, len(results), tData.keywords)
 	}
