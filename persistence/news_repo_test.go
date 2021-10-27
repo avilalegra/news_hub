@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-func TestAddIntegration(t *testing.T) {
+func TestStorePersistDataIntegration(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test")
 	}
@@ -26,7 +26,15 @@ func TestAddIntegration(t *testing.T) {
 	cursor, _ = prevCol.Find(context.TODO(), bson.D{{}})
 	cursor.All(context.TODO(), &prevs)
 	assert.Equal(t, news.Previews[0:2], prevs)
+}
 
+func TestStoreDuplicatesReturnErrorIntegration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+	RecreateDb()
+	keeper := NewMongoKeeper()
+	keeper.Store(news.Previews[1])
 	err := keeper.Store(news.Previews[1])
 	assert.ErrorIs(t, err, news.PrevExistsErr{PreviewTitle: news.Previews[1].Title})
 }
