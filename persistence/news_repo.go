@@ -26,6 +26,12 @@ func (r mongoRepo) Store(preview news.Preview) error {
 	return nil
 }
 
+func (r mongoRepo) Remove(preview news.Preview) {
+	if _, err := r.prevCol.DeleteOne(context.TODO(), bson.M{"link": preview.Link}); err != nil {
+		panic(err)
+	}
+}
+
 func (r mongoRepo) Find(keywords string) []news.Preview {
 	var previews []news.Preview
 	cursor, err := r.prevCol.Find(context.TODO(), bson.M{"$text": bson.M{"$search": keywords}})

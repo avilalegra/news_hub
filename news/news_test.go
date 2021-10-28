@@ -22,6 +22,10 @@ func (r *KeeperMock) Store(preview Preview) error {
 	return nil
 }
 
+func (r *KeeperMock) Remove(preview Preview) {
+	panic("implement me")
+}
+
 func NewMockKeeper() *KeeperMock {
 	return &KeeperMock{make([]Preview, 0), nil}
 }

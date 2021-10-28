@@ -86,6 +86,21 @@ func TestFindBeforeIntegration(t *testing.T) {
 	}
 }
 
+func TestRemoveIntegration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+	RecreateDb()
+	loadDbFixtures()
+	repo := newMongoRepo(Database, nil)
+
+	repo.Remove(news.Previews[0])
+	assert.Equal(t, news.Previews[1:], getAllStoredPreviews())
+
+	repo.Remove(news.Preview{Link: "news link"})
+	assert.Equal(t, news.Previews[1:], getAllStoredPreviews())
+}
+
 func getAllStoredPreviews() (prevs []news.Preview) {
 	prevCol := Database.Collection("news_previews")
 	cursor, _ := prevCol.Find(context.TODO(), bson.M{})

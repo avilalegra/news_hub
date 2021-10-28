@@ -31,6 +31,7 @@ type Finder interface {
 
 type Keeper interface {
 	Store(preview Preview) error
+	Remove(preview Preview)
 }
 
 type PrevExistsErr struct {
