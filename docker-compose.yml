@@ -2,9 +2,10 @@ services:
   go:
     build: .
     ports:
-      - 8080:8080
+      - 8085:8085
     volumes:
       - .:/code
+    entrypoint: go run main.go
 
   mongo:
     image: mongo
