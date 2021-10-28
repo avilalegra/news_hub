@@ -73,6 +73,19 @@ func TestSearchIntegration(t *testing.T) {
 	}
 }
 
+func TestFindBeforeIntegration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+	RecreateDb()
+	loadDbFixtures()
+	repo := newMongoRepo(Database, nil)
+	for _, tData := range tsFindBefore {
+		previews := repo.FindBefore(tData.unixTime)
+		assert.Equal(t, tData.previews, previews)
+	}
+}
+
 func getAllStoredPreviews() (prevs []news.Preview) {
 	prevCol := Database.Collection("news_previews")
 	cursor, _ := prevCol.Find(context.TODO(), bson.M{})
@@ -150,6 +163,24 @@ var tsFindByTitle = []struct {
 	},
 	{
 		"not existing title",
+		nil,
+	},
+}
+
+var tsFindBefore = []struct {
+	unixTime int64
+	previews []news.Preview
+}{
+	{
+		int64(123),
+		news.Previews[2:4],
+	},
+	{
+		int64(8910),
+		news.Previews,
+	},
+	{
+		int64(0),
 		nil,
 	},
 }

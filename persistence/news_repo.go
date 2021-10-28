@@ -40,7 +40,16 @@ func (r mongoRepo) Find(keywords string) []news.Preview {
 }
 
 func (r mongoRepo) FindBefore(unixTime int64) []news.Preview {
-	panic("implement me")
+	var previews []news.Preview
+	cursor, err := r.prevCol.Find(context.TODO(), bson.M{"regunixtime": bson.M{"$lt": unixTime}})
+	if err != nil {
+		panic(err)
+	}
+	err = cursor.All(context.TODO(), &previews)
+	if err != nil {
+		panic(err)
+	}
+	return previews
 }
 
 func (r mongoRepo) findByTitle(title string) *news.Preview {
