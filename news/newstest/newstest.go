@@ -9,6 +9,10 @@ type Finder struct {
 	Previews []news.Preview
 }
 
+func (b Finder) FindBefore(unixTime int64) []news.Preview {
+	panic("implement me")
+}
+
 func (b Finder) Find(keywords string) []news.Preview {
 	if b.Keywords != keywords {
 		return nil

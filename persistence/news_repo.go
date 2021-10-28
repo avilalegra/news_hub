@@ -39,6 +39,10 @@ func (r mongoRepo) Find(keywords string) []news.Preview {
 	return previews
 }
 
+func (r mongoRepo) FindBefore(unixTime int64) []news.Preview {
+	panic("implement me")
+}
+
 func (r mongoRepo) findByTitle(title string) *news.Preview {
 	var preview news.Preview
 	result := r.prevCol.FindOne(context.TODO(), bson.M{"title": title})
