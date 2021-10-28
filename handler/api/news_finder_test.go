@@ -2,7 +2,6 @@ package api
 
 import (
 	"avilego.me/recent_news/news"
-	"avilego.me/recent_news/news/newstest"
 	"encoding/json"
 	"fmt"
 	"github.com/stretchr/testify/assert"
@@ -37,7 +36,7 @@ func TestSearch(t *testing.T) {
 	for i, tData := range tsSearch {
 		t.Run(fmt.Sprintf("sample %d", i), func(t *testing.T) {
 			t.Parallel()
-			handler := ApiSearchHandler{newstest.Finder{Keywords: tData.keywords, Previews: tData.previews}}
+			handler := ApiSearchHandler{news.FinderMock{Previews: tData.previews}}
 			params := url.Values{}
 			params.Set("keywords", tData.keywords)
 			expectedJson, _ := json.Marshal(newSearchResponse(tData.previews))

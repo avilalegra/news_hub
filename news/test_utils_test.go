@@ -1,7 +1,6 @@
-package newstest
+package news
 
 import (
-	"avilego.me/recent_news/news"
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -20,16 +19,16 @@ func TestFinder(t *testing.T) {
 var tsFinder = []struct {
 	keywords string
 	finder   Finder
-	expected []news.Preview
+	expected []Preview
 }{
 	{
 		"AMD",
-		Finder{"AMD", news.Previews[0:2]},
-		news.Previews[0:2],
+		FinderMock{Previews[0:2]},
+		Previews[0:2],
 	},
 	{
 		"nothing",
-		Finder{"AMD", news.Previews[0:2]},
+		FinderMock{nil},
 		nil,
 	},
 }

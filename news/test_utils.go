@@ -1,5 +1,63 @@
 package news
 
+import "time"
+
+type FinderMock struct {
+	Previews []Preview
+}
+
+func (b FinderMock) FindBefore(unixTime int64) []Preview {
+	panic("implement me")
+}
+
+func (b FinderMock) Find(keywords string) []Preview {
+	return b.Previews
+}
+
+type KeeperMock struct {
+	Previews []Preview
+	Error    error
+}
+
+func (r *KeeperMock) Store(preview Preview) error {
+	if r.Error != nil {
+		return r.Error
+	}
+	r.Previews = append(r.Previews, preview)
+	return nil
+}
+
+func (r *KeeperMock) Remove(preview Preview) {
+	panic("implement me")
+}
+
+func NewMockKeeper() *KeeperMock {
+	return &KeeperMock{make([]Preview, 0), nil}
+}
+
+func NewFailingMockKeeper(err error) *KeeperMock {
+	return &KeeperMock{make([]Preview, 0), err}
+}
+
+type ProviderMock struct {
+	Trigger  chan time.Time
+	Previews []Preview
+	Errors   []error
+}
+
+func (p ProviderMock) ProvideAsync(providers chan<- Preview, errs chan<- error) {
+	go func() {
+		for range p.Trigger {
+			for _, preview := range p.Previews {
+				providers <- preview
+			}
+			for _, e := range p.Errors {
+				errs <- e
+			}
+		}
+	}()
+}
+
 var Sources = map[string]*Source{
 	"phoronix": {
 		Title:       `Phoronix`,
