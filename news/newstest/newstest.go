@@ -9,6 +9,7 @@ type Finder struct {
 	Previews []news.Preview
 }
 
+//TODO: Implement this
 func (b Finder) FindBefore(unixTime int64) []news.Preview {
 	panic("implement me")
 }

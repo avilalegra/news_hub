@@ -29,6 +29,7 @@ type Finder interface {
 	FindBefore(unixTime int64) []Preview
 }
 
+//TODO: Is it really necesary for Store to return an error ?
 type Keeper interface {
 	Store(preview Preview) error
 	Remove(preview Preview)

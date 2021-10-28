@@ -22,6 +22,7 @@ func (r *KeeperMock) Store(preview Preview) error {
 	return nil
 }
 
+//TODO: Implement this
 func (r *KeeperMock) Remove(preview Preview) {
 	panic("implement me")
 }
