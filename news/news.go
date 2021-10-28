@@ -1,7 +1,6 @@
 package news
 
 import (
-	"fmt"
 	"log"
 )
 
@@ -29,18 +28,9 @@ type Finder interface {
 	FindBefore(unixTime int64) []Preview
 }
 
-//TODO: Is it really necesary for Store to return an error ?
 type Keeper interface {
-	Store(preview Preview) error
+	Store(preview Preview)
 	Remove(preview Preview)
-}
-
-type PrevExistsErr struct {
-	PreviewTitle string
-}
-
-func (e PrevExistsErr) Error() string {
-	return fmt.Sprintf("existing preview with title %s", e.PreviewTitle)
 }
 
 type Collector struct {
@@ -61,9 +51,7 @@ func (c Collector) Run() {
 		for {
 			select {
 			case preview := <-prvChan:
-				if err := c.Keeper.Store(preview); err != nil {
-					c.Logger.Println(err)
-				}
+				c.Keeper.Store(preview)
 			case err := <-errChan:
 				c.Logger.Println(err)
 			}

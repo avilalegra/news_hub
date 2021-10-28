@@ -14,16 +14,14 @@ type mongoRepo struct {
 	timeProvider unixTimeProvider
 }
 
-func (r mongoRepo) Store(preview news.Preview) error {
+func (r mongoRepo) Store(preview news.Preview) {
 	if prev := r.findByTitle(preview.Title); prev != nil {
-		return news.PrevExistsErr{PreviewTitle: prev.Title}
+		return
 	}
 	preview.RegUnixTime = r.timeProvider()
 	if _, err := r.prevCol.InsertOne(context.TODO(), preview); err != nil {
 		panic(err)
 	}
-
-	return nil
 }
 
 func (r mongoRepo) Remove(preview news.Preview) {

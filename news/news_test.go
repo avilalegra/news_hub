@@ -49,24 +49,6 @@ func TestCollectorLogsProvidersErrors(t *testing.T) {
 	assert.Contains(t, writerMock.msg, "error fetching from source: rtve")
 }
 
-func TestCollectorLogsKeeperErrors(t *testing.T) {
-	keeperErr := errors.New("couldn't save preview")
-	trigger := make(chan time.Time, 1)
-	provider := ProviderMock{trigger, Previews, nil}
-	writerMock := new(writerMock)
-	collector := Collector{
-		[]AsyncProvider{provider},
-		NewFailingMockKeeper(keeperErr),
-		log.New(writerMock, "", log.LstdFlags),
-	}
-
-	collector.Run()
-
-	trigger <- time.Now()
-	time.Sleep(1 * time.Millisecond)
-	assert.Contains(t, writerMock.msg, "couldn't save preview")
-}
-
 type writerMock struct {
 	msg string
 }

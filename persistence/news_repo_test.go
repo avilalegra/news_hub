@@ -22,16 +22,18 @@ func TestStorePersistDataIntegration(t *testing.T) {
 	assert.Equal(t, news.Previews[0], expects[0])
 }
 
-func TestStoreDuplicatesReturnErrorIntegration(t *testing.T) {
+func TestStoreDuplicatesIgnoredIntegration(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test")
 	}
 	RecreateDb()
-	keeper := NewMongoKeeper()
+	preview := news.Previews[0]
+	keeper := newMongoRepo(Database, newTimeProviderMock(preview.RegUnixTime))
 
-	keeper.Store(news.Previews[1])
-	err := keeper.Store(news.Previews[1])
-	assert.ErrorIs(t, err, news.PrevExistsErr{PreviewTitle: news.Previews[1].Title})
+	keeper.Store(preview)
+	keeper.Store(preview)
+
+	assert.Equal(t, news.Previews[:1], getAllStoredPreviews())
 }
 
 func TestRegTimeSetOnStoringIntegration(t *testing.T) {

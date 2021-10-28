@@ -16,15 +16,10 @@ func (b FinderMock) Find(keywords string) []Preview {
 
 type KeeperMock struct {
 	Previews []Preview
-	Error    error
 }
 
-func (r *KeeperMock) Store(preview Preview) error {
-	if r.Error != nil {
-		return r.Error
-	}
+func (r *KeeperMock) Store(preview Preview) {
 	r.Previews = append(r.Previews, preview)
-	return nil
 }
 
 func (r *KeeperMock) Remove(preview Preview) {
@@ -32,11 +27,7 @@ func (r *KeeperMock) Remove(preview Preview) {
 }
 
 func NewMockKeeper() *KeeperMock {
-	return &KeeperMock{make([]Preview, 0), nil}
-}
-
-func NewFailingMockKeeper(err error) *KeeperMock {
-	return &KeeperMock{make([]Preview, 0), err}
+	return &KeeperMock{make([]Preview, 0)}
 }
 
 type ProviderMock struct {
