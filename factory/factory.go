@@ -24,7 +24,7 @@ var providers = []news.AsyncProvider{
 			rss.NewSource("https://web.gencat.cat/es/actualitat/rss.html"),
 			rss.NewSource("https://www.abc.es/rss/feeds/abcPortada.xml"),
 		},
-		time.Tick(1*time.Minute),
+		time.Tick(5*time.Minute),
 	),
 }
 
@@ -47,4 +47,12 @@ func Finder() news.Finder {
 
 func Keeper() news.Keeper {
 	return persistence.NewMongoKeeper()
+}
+
+func Cleaner() news.Cleaner {
+	return news.Cleaner{
+		KeeperFinder: persistence.NewMongoKeeperFinder(),
+		Trigger:      time.Tick(1 * time.Hour),
+		Ttl:          int64((24 * time.Hour).Seconds()),
+	}
 }

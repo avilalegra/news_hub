@@ -81,6 +81,10 @@ func NewMongoFinder() news.Finder {
 	return newMongoRepo(Database, defaultTimeProvider)
 }
 
+func NewMongoKeeperFinder() news.KeeperFinder {
+	return newMongoRepo(Database, defaultTimeProvider)
+}
+
 type unixTimeProvider func() int64
 
 var defaultTimeProvider = func() int64 {
