@@ -1,7 +1,9 @@
 package news
 
 import (
+	"fmt"
 	"log"
+	"time"
 )
 
 type Source struct {
@@ -59,6 +61,26 @@ func (c Collector) Run() {
 				c.Keeper.Store(preview)
 			case err := <-errChan:
 				c.Logger.Println(err)
+			}
+		}
+	}()
+}
+
+//Cleaner ensures that expired news are removed
+type Cleaner struct {
+	KeeperFinder KeeperFinder
+	Trigger      <-chan time.Time
+	Ttl          int64
+}
+
+func (c Cleaner) Run() {
+	go func() {
+		for range c.Trigger {
+			fmt.Println("running cleaner")
+			limit := time.Now().Unix() - c.Ttl
+			expired := c.KeeperFinder.FindBefore(limit)
+			for _, preview := range expired {
+				c.KeeperFinder.Remove(preview)
 			}
 		}
 	}()
