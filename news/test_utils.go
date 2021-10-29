@@ -1,17 +1,28 @@
 package news
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 type FinderMock struct {
-	Previews []Preview
+	ExpectedUnixTime int64
+	ExpectedKeywords string
+	Results          []Preview
 }
 
 func (b FinderMock) FindBefore(unixTime int64) []Preview {
-	panic("implement me")
+	if unixTime != b.ExpectedUnixTime {
+		panic(fmt.Sprintf("expecting %d but %d provided", b.ExpectedUnixTime, unixTime))
+	}
+	return b.Results
 }
 
 func (b FinderMock) FindRelated(keywords string) []Preview {
-	return b.Previews
+	if keywords != b.ExpectedKeywords {
+		panic(fmt.Sprintf("expecting %s but %s provided", b.ExpectedKeywords, keywords))
+	}
+	return b.Results
 }
 
 type KeeperMock struct {
