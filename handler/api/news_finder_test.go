@@ -35,7 +35,7 @@ func TestSearch(t *testing.T) {
 	for i, tData := range tsSearch {
 		t.Run(fmt.Sprintf("sample %d", i), func(t *testing.T) {
 			t.Parallel()
-			handler := ApiSearchHandler{news.FinderMock{ExpectedKeywords: tData.keywords, Results: tData.previews}}
+			handler := ApiSearchHandler{news.FinderFake{Previews: tData.previews}}
 			expectedJson, _ := json.Marshal(newSearchResponse(tData.previews))
 			request, _ := http.NewRequest("GET", "/api/search?keywords="+tData.keywords, nil)
 			resp := httptest.NewRecorder()

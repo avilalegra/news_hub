@@ -3,6 +3,7 @@ module avilego.me/recent_news
 go 1.17
 
 require (
+	github.com/grokify/html-strip-tags-go v0.0.1
 	github.com/joho/godotenv v1.3.0
 	github.com/stretchr/testify v1.7.0
 	go.mongodb.org/mongo-driver v1.7.3

@@ -1,28 +1,48 @@
 package news
 
 import (
-	"fmt"
+	strip "github.com/grokify/html-strip-tags-go"
+	"html"
+	"regexp"
+	"strings"
 	"time"
 )
 
-type FinderMock struct {
-	ExpectedUnixTime int64
-	ExpectedKeywords string
-	Results          []Preview
+type FinderFake struct {
+	Previews []Preview
 }
 
-func (b FinderMock) FindBefore(unixTime int64) []Preview {
-	if unixTime != b.ExpectedUnixTime {
-		panic(fmt.Sprintf("expecting %d but %d provided", b.ExpectedUnixTime, unixTime))
+func (b FinderFake) FindBefore(unixTime int64) []Preview {
+	var filtered []Preview
+	for _, p := range b.Previews {
+		if p.RegUnixTime < unixTime {
+			filtered = append(filtered, p)
+		}
 	}
-	return b.Results
+	return filtered
 }
 
-func (b FinderMock) FindRelated(keywords string) []Preview {
-	if keywords != b.ExpectedKeywords {
-		panic(fmt.Sprintf("expecting %s but %s provided", b.ExpectedKeywords, keywords))
+// FindRelated implementation of FinderFake returns only those previews
+// that contains one of the keywords in either the title
+// or the description
+func (b FinderFake) FindRelated(keywords string) []Preview {
+	if keywords == "" {
+		return nil
 	}
-	return b.Results
+	var matches []Preview
+	words := strings.Fields(keywords)
+	for i, w := range words {
+		words[i] = strings.ToLower(strings.Trim(w, ",.;"))
+	}
+
+	regx := regexp.MustCompile(strings.Join(words, "|"))
+	for _, p := range b.Previews {
+		haystack := strip.StripTags(strings.ToLower(html.UnescapeString(p.Title + " " + p.Description)))
+		if regx.MatchString(haystack) {
+			matches = append(matches, p)
+		}
+	}
+	return matches
 }
 
 type KeeperFake struct {
