@@ -25,20 +25,22 @@ func (b FinderMock) FindRelated(keywords string) []Preview {
 	return b.Results
 }
 
-type KeeperMock struct {
+type KeeperFake struct {
 	Previews []Preview
 }
 
-func (r *KeeperMock) Store(preview Preview) {
+func (r *KeeperFake) Store(preview Preview) {
 	r.Previews = append(r.Previews, preview)
 }
 
-func (r *KeeperMock) Remove(preview Preview) {
-	panic("implement me")
-}
-
-func NewMockKeeper() *KeeperMock {
-	return &KeeperMock{make([]Preview, 0)}
+func (r *KeeperFake) Remove(preview Preview) {
+	var filtered []Preview
+	for _, p := range r.Previews {
+		if p.Link != preview.Link {
+			filtered = append(filtered, p)
+		}
+	}
+	r.Previews = filtered
 }
 
 type ProviderMock struct {

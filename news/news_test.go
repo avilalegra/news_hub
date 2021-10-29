@@ -10,7 +10,7 @@ import (
 )
 
 func TestCollector(t *testing.T) {
-	r := &KeeperMock{}
+	r := &KeeperFake{}
 	triggerA := make(chan time.Time)
 	providerA := ProviderMock{triggerA, Previews[0:2], nil}
 	triggerB := make(chan time.Time)
@@ -38,7 +38,7 @@ func TestCollectorLogsProvidersErrors(t *testing.T) {
 	writerMock := new(writerMock)
 	collector := Collector{
 		[]AsyncProvider{provider},
-		NewMockKeeper(),
+		nil,
 		log.New(writerMock, "", log.LstdFlags),
 	}
 
