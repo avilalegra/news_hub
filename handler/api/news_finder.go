@@ -60,7 +60,7 @@ type ApiSearchHandler struct {
 
 func (h ApiSearchHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	expr := r.URL.Query().Get("keywords")
-	previews := h.Finder.Find(expr)
+	previews := h.Finder.FindRelated(expr)
 	searchResponse := newSearchResponse(previews)
 	jsonResponse, err := json.Marshal(searchResponse)
 	if err != nil {

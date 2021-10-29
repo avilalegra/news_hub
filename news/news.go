@@ -24,7 +24,7 @@ type AsyncProvider interface {
 }
 
 type Finder interface {
-	Find(keywords string) []Preview
+	FindRelated(keywords string) []Preview
 	FindBefore(unixTime int64) []Preview
 }
 

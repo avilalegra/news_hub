@@ -10,7 +10,7 @@ func (b FinderMock) FindBefore(unixTime int64) []Preview {
 	panic("implement me")
 }
 
-func (b FinderMock) Find(keywords string) []Preview {
+func (b FinderMock) FindRelated(keywords string) []Preview {
 	return b.Previews
 }
 

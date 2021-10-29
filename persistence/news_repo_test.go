@@ -70,7 +70,7 @@ func TestSearchIntegration(t *testing.T) {
 	repo := newMongoRepo(Database, nil)
 	loadDbFixtures()
 	for _, tData := range tsSearch {
-		results := repo.Find(tData.keywords)
+		results := repo.FindRelated(tData.keywords)
 		assert.Equal(t, tData.count, len(results), tData.keywords)
 	}
 }

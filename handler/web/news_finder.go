@@ -14,7 +14,7 @@ type SearchHandler struct {
 
 func (h SearchHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	expr := r.URL.Query().Get("keywords")
-	previews := h.Finder.Find(expr)
+	previews := h.Finder.FindRelated(expr)
 	var files = []string{
 		env.ProjDir() + "/templates/find_news.gohtml",
 		env.ProjDir() + "/templates/base.gohtml",

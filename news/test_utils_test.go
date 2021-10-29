@@ -10,7 +10,7 @@ func TestFinder(t *testing.T) {
 	for i, tData := range tsFinder {
 		t.Run(fmt.Sprintf("sample %d", i), func(t *testing.T) {
 			t.Parallel()
-			previews := tData.finder.Find(tData.keywords)
+			previews := tData.finder.FindRelated(tData.keywords)
 			assert.Equal(t, tData.expected, previews)
 		})
 	}

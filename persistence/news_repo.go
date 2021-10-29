@@ -30,7 +30,7 @@ func (r mongoRepo) Remove(preview news.Preview) {
 	}
 }
 
-func (r mongoRepo) Find(keywords string) []news.Preview {
+func (r mongoRepo) FindRelated(keywords string) []news.Preview {
 	var previews []news.Preview
 	cursor, err := r.prevCol.Find(context.TODO(), bson.M{"$text": bson.M{"$search": keywords}})
 	if err != nil {
