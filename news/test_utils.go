@@ -8,13 +8,13 @@ import (
 	"time"
 )
 
-type FinderFake struct {
+type KeeperFinderFake struct {
 	Previews []Preview
 }
 
-func (b FinderFake) FindBefore(unixTime int64) []Preview {
+func (kf KeeperFinderFake) FindBefore(unixTime int64) []Preview {
 	var filtered []Preview
-	for _, p := range b.Previews {
+	for _, p := range kf.Previews {
 		if p.RegUnixTime < unixTime {
 			filtered = append(filtered, p)
 		}
@@ -22,10 +22,10 @@ func (b FinderFake) FindBefore(unixTime int64) []Preview {
 	return filtered
 }
 
-// FindRelated implementation of FinderFake returns only those previews
+// FindRelated implementation of KeeperFinderFake returns only those previews
 // that contains one of the keywords in either the title
 // or the description
-func (b FinderFake) FindRelated(keywords string) []Preview {
+func (kf KeeperFinderFake) FindRelated(keywords string) []Preview {
 	if keywords == "" {
 		return nil
 	}
@@ -36,7 +36,7 @@ func (b FinderFake) FindRelated(keywords string) []Preview {
 	}
 
 	regx := regexp.MustCompile(strings.Join(words, "|"))
-	for _, p := range b.Previews {
+	for _, p := range kf.Previews {
 		haystack := strip.StripTags(strings.ToLower(html.UnescapeString(p.Title + " " + p.Description)))
 		if regx.MatchString(haystack) {
 			matches = append(matches, p)
@@ -45,22 +45,18 @@ func (b FinderFake) FindRelated(keywords string) []Preview {
 	return matches
 }
 
-type KeeperFake struct {
-	Previews []Preview
+func (kf *KeeperFinderFake) Store(preview Preview) {
+	kf.Previews = append(kf.Previews, preview)
 }
 
-func (r *KeeperFake) Store(preview Preview) {
-	r.Previews = append(r.Previews, preview)
-}
-
-func (r *KeeperFake) Remove(preview Preview) {
+func (kf *KeeperFinderFake) Remove(preview Preview) {
 	var filtered []Preview
-	for _, p := range r.Previews {
+	for _, p := range kf.Previews {
 		if p.Link != preview.Link {
 			filtered = append(filtered, p)
 		}
 	}
-	r.Previews = filtered
+	kf.Previews = filtered
 }
 
 type ProviderMock struct {

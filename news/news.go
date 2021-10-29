@@ -33,6 +33,11 @@ type Keeper interface {
 	Remove(preview Preview)
 }
 
+type KeeperFinder interface {
+	Keeper
+	Finder
+}
+
 type Collector struct {
 	Providers []AsyncProvider
 	Keeper    Keeper

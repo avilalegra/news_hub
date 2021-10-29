@@ -10,7 +10,7 @@ import (
 )
 
 func TestCollector(t *testing.T) {
-	r := &KeeperFake{}
+	r := &KeeperFinderFake{}
 	triggerA := make(chan time.Time)
 	providerA := ProviderMock{triggerA, Previews[0:2], nil}
 	triggerB := make(chan time.Time)
