@@ -7,7 +7,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"testing"
 )
 
@@ -36,11 +35,8 @@ func TestSearch(t *testing.T) {
 	for i, tData := range tsSearch {
 		t.Run(fmt.Sprintf("sample %d", i), func(t *testing.T) {
 			t.Parallel()
-			handler := ApiSearchHandler{news.FinderMock{Results: tData.previews}}
-			params := url.Values{}
-			params.Set("keywords", tData.keywords)
+			handler := ApiSearchHandler{news.FinderMock{ExpectedKeywords: tData.keywords, Results: tData.previews}}
 			expectedJson, _ := json.Marshal(newSearchResponse(tData.previews))
-
 			request, _ := http.NewRequest("GET", "/api/search?keywords="+tData.keywords, nil)
 			resp := httptest.NewRecorder()
 
