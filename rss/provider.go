@@ -7,7 +7,7 @@ import (
 	"avilego.me/recent_news/news"
 )
 
-func NewRssNewsProvider(sources []Source, interval <-chan time.Time) news.AsyncProvider {
+func NewRssNewsProvider(sources []Source, interval <-chan time.Time) news.Provider {
 	return NewsProvider{
 		sources,
 		interval,
@@ -19,20 +19,19 @@ type NewsProvider struct {
 	interval <-chan time.Time
 }
 
-func (p NewsProvider) ProvideAsync(previewsChan chan<- news.Preview, errorsChan chan<- error) {
-	go func() {
-		for range p.interval {
-			var wg sync.WaitGroup
-			for _, source := range p.sources {
-				wg.Add(1)
-				go func(s Source) {
-					defer wg.Done()
-					fetchSourceNews(s, previewsChan, errorsChan)
-				}(source)
-			}
-			wg.Wait()
+func (p NewsProvider) Provide(previewsChan chan<- news.Preview, errorsChan chan<- error) {
+	for range p.interval {
+		var wg sync.WaitGroup
+		for _, source := range p.sources {
+			wg.Add(1)
+			go func(s Source) {
+				defer wg.Done()
+				fetchSourceNews(s, previewsChan, errorsChan)
+			}(source)
 		}
-	}()
+		wg.Wait()
+	}
+
 }
 
 func fetchSourceNews(s Source, previewsChan chan<- news.Preview, errorsChan chan<- error) {

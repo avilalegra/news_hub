@@ -21,7 +21,7 @@ func TestRssProvider(t *testing.T) {
 			var errs []error
 			provider := NewRssNewsProvider(tData.sources, trigger)
 
-			provider.ProvideAsync(previewsChan, errorsChan)
+			go provider.Provide(previewsChan, errorsChan)
 
 			trigger <- time.Now()
 			trigger <- time.Now()

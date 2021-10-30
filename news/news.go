@@ -21,8 +21,8 @@ type Preview struct {
 	RegUnixTime int64
 }
 
-type AsyncProvider interface {
-	ProvideAsync(chan<- Preview, chan<- error)
+type Provider interface {
+	Provide(chan<- Preview, chan<- error)
 }
 
 type Finder interface {
@@ -41,7 +41,7 @@ type KeeperFinder interface {
 }
 
 type Collector struct {
-	Providers []AsyncProvider
+	Providers []Provider
 	Keeper    Keeper
 	Logger    *log.Logger
 }
@@ -51,7 +51,7 @@ func (c Collector) Run() {
 	errChan := make(chan error)
 
 	for _, p := range c.Providers {
-		p.ProvideAsync(prvChan, errChan)
+		go p.Provide(prvChan, errChan)
 	}
 
 	go func() {

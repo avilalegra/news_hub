@@ -65,17 +65,15 @@ type ProviderMock struct {
 	Errors   []error
 }
 
-func (p ProviderMock) ProvideAsync(providers chan<- Preview, errs chan<- error) {
-	go func() {
-		for range p.Trigger {
-			for _, preview := range p.Previews {
-				providers <- preview
-			}
-			for _, e := range p.Errors {
-				errs <- e
-			}
+func (p ProviderMock) Provide(providers chan<- Preview, errs chan<- error) {
+	for range p.Trigger {
+		for _, preview := range p.Previews {
+			providers <- preview
 		}
-	}()
+		for _, e := range p.Errors {
+			errs <- e
+		}
+	}
 }
 
 var Sources = map[string]*Source{

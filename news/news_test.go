@@ -17,7 +17,7 @@ func TestCollector(t *testing.T) {
 	providerB := ProviderMock{triggerB, Previews[2:], nil}
 
 	collector := Collector{
-		[]AsyncProvider{providerA, providerB},
+		[]Provider{providerA, providerB},
 		r,
 		log.Default(),
 	}
@@ -37,7 +37,7 @@ func TestCollectorLogsProvidersErrors(t *testing.T) {
 	provider := ProviderMock{trigger, nil, []error{errors.New("error fetching from source: rtve")}}
 	writerMock := new(writerMock)
 	collector := Collector{
-		[]AsyncProvider{provider},
+		[]Provider{provider},
 		nil,
 		log.New(writerMock, "", log.LstdFlags),
 	}

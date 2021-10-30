@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-var providers = []news.AsyncProvider{
+var providers = []news.Provider{
 	rss.NewRssNewsProvider(
 		[]rss.Source{
 			rss.NewSource("http://api2.rtve.es/rss/temas_noticias.xml"),
