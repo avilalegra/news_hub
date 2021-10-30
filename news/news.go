@@ -72,14 +72,12 @@ type Cleaner struct {
 }
 
 func (c Cleaner) Run() {
-	go func() {
-		for range c.Trigger {
-			fmt.Println("running cleaner")
-			limit := time.Now().Unix() - c.Ttl
-			expired := c.KeeperFinder.FindBefore(limit)
-			for _, preview := range expired {
-				c.KeeperFinder.Remove(preview)
-			}
+	for range c.Trigger {
+		fmt.Println("running cleaner")
+		limit := time.Now().Unix() - c.Ttl
+		expired := c.KeeperFinder.FindBefore(limit)
+		for _, preview := range expired {
+			c.KeeperFinder.Remove(preview)
 		}
-	}()
+	}
 }

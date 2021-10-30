@@ -55,7 +55,7 @@ func TestCleaner(t *testing.T) {
 	kf := KeeperFinderFake{Previews: tsCleaner}
 	cleaner := Cleaner{&kf, trigger, int64((24 * time.Hour).Seconds())}
 
-	cleaner.Run()
+	go cleaner.Run()
 	trigger <- time.Now()
 	close(trigger)
 	<-time.After(1 * time.Millisecond)
