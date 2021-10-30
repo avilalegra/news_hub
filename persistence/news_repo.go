@@ -73,14 +73,6 @@ func newMongoRepo(database *mongo.Database, timeProvider unixTimeProvider) mongo
 	return mongoRepo{database, database.Collection("news_previews"), timeProvider}
 }
 
-func NewMongoKeeper() news.Keeper {
-	return newMongoRepo(Database, defaultTimeProvider)
-}
-
-func NewMongoFinder() news.Finder {
-	return newMongoRepo(Database, defaultTimeProvider)
-}
-
 func NewMongoKeeperFinder() news.KeeperFinder {
 	return newMongoRepo(Database, defaultTimeProvider)
 }

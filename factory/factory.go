@@ -42,11 +42,11 @@ func Collector() news.Collector {
 }
 
 func Finder() news.Finder {
-	return persistence.NewMongoFinder()
+	return persistence.NewMongoKeeperFinder()
 }
 
 func Keeper() news.Keeper {
-	return persistence.NewMongoKeeper()
+	return persistence.NewMongoKeeperFinder()
 }
 
 func Cleaner() news.Cleaner {
