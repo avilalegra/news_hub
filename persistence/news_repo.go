@@ -15,7 +15,7 @@ type mongoRepo struct {
 }
 
 func (r mongoRepo) Store(preview news.Preview) {
-	if prev := r.findByTitle(preview.Title); prev != nil {
+	if prev := r.findByLink(preview.Link); prev != nil {
 		return
 	}
 	preview.RegUnixTime = r.timeProvider()
@@ -56,9 +56,9 @@ func (r mongoRepo) FindBefore(unixTime int64) []news.Preview {
 	return previews
 }
 
-func (r mongoRepo) findByTitle(title string) *news.Preview {
+func (r mongoRepo) findByLink(link string) *news.Preview {
 	var preview news.Preview
-	result := r.prevCol.FindOne(context.TODO(), bson.M{"title": title})
+	result := r.prevCol.FindOne(context.TODO(), bson.M{"link": link})
 	if result.Err() == mongo.ErrNoDocuments {
 		return nil
 	}

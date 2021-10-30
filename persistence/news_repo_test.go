@@ -49,7 +49,7 @@ func TestRegTimeSetOnStoringIntegration(t *testing.T) {
 	assert.Equal(t, int64(123456), expected.RegUnixTime)
 }
 
-func TestFindByTitleIntegration(t *testing.T) {
+func TestFindByLinkIntegration(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test")
 	}
@@ -57,7 +57,7 @@ func TestFindByTitleIntegration(t *testing.T) {
 	repo := newMongoRepo(Database, nil)
 	loadDbFixtures()
 	for _, tData := range tsFindByTitle {
-		preview := repo.findByTitle(tData.Title)
+		preview := repo.findByLink(tData.Link)
 		assert.Equal(t, tData.Preview, preview)
 	}
 }
@@ -162,24 +162,24 @@ var tsSearch = []struct {
 }
 
 var tsFindByTitle = []struct {
-	Title   string
+	Link    string
 	Preview *news.Preview
 }{
 	{
-		`AMD Posts Code Enabling "Cyan Skillfish" Display Support Due To Different DCN2 Variant`,
+		`https://www.phoronix.com/scan.php?page=news_item&px=AMD-Cyan-Skillfish-DCN-2.01`,
 		&news.Previews[0],
 	},
 
 	{
-		`Linux 5.16 To Bring Initial DisplayPort 2.0 Support For AMD Radeon Driver (AMDGPU)`,
+		`https://www.phoronix.com/scan.php?page=news_item&px=AMDGPU-DP-2.0-Linux-5.16`,
 		&news.Previews[1],
 	},
 	{
-		`Linux 5.16 To Bring Initial`, //test incomplete title
+		`https://www.phoronix.com/scan.php?page=news_item&px`, //test incomplete link
 		nil,
 	},
 	{
-		"not existing title",
+		"not existing link",
 		nil,
 	},
 }
