@@ -47,20 +47,22 @@ type Collector struct {
 	Logger    *log.Logger
 }
 
-func (c Collector) Run() {
+func (c Collector) Run(ctx context.Context) {
 	prvChan := make(chan Preview)
 	errChan := make(chan error)
 
 	for _, p := range c.Providers {
-		go p.Provide(prvChan, errChan, context.TODO())
+		go p.Provide(prvChan, errChan, ctx)
 	}
 
-	for {
+	for running := true; running; {
 		select {
 		case preview := <-prvChan:
 			c.Keeper.Store(preview)
 		case err := <-errChan:
 			c.Logger.Println(err)
+		case <-ctx.Done():
+			running = false
 		}
 	}
 }

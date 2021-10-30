@@ -1,6 +1,7 @@
 package news
 
 import (
+	"context"
 	"errors"
 	"log"
 	"testing"
@@ -10,32 +11,56 @@ import (
 )
 
 func TestCollector(t *testing.T) {
-	r := &KeeperFinderFake{}
+	kf := &KeeperFinderFake{}
 	triggerA := make(chan time.Time)
-	providerA := ProviderMock{triggerA, Previews[0:2], nil}
+	providerA := NewProviderMock(triggerA, Previews[0:2], nil)
 	triggerB := make(chan time.Time)
-	providerB := ProviderMock{triggerB, Previews[2:], nil}
+	providerB := NewProviderMock(triggerB, Previews[2:], nil)
 
 	collector := Collector{
 		[]Provider{providerA, providerB},
-		r,
+		kf,
 		log.Default(),
 	}
 
-	go collector.Run()
+	go collector.Run(context.Background())
 
 	triggerA <- time.Now()
 	time.Sleep(1 * time.Millisecond)
-	assert.Equal(t, Previews[:2], r.Previews)
+	assert.Equal(t, Previews[:2], kf.Previews)
 
 	triggerB <- time.Now()
 	time.Sleep(1 * time.Millisecond)
-	assert.Equal(t, Previews, r.Previews)
+	assert.Equal(t, Previews, kf.Previews)
+}
+
+func TestCollectorContextCancellation(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	providerA := NewProviderMock(make(chan time.Time), Previews[0:2], nil)
+	providerB := NewProviderMock(make(chan time.Time), Previews[2:], nil)
+	exit := make(chan bool)
+	collector := Collector{
+		[]Provider{providerA, providerB},
+		nil,
+		log.Default(),
+	}
+
+	go func() {
+		collector.Run(ctx)
+		exit <- true
+	}()
+	<-time.After(1 * time.Millisecond)
+	cancel()
+
+	assert.True(t, <-exit)
+	for _, provider := range collector.Providers {
+		assert.Equal(t, ctx, provider.(*ProviderMock).Ctx)
+	}
 }
 
 func TestCollectorLogsProvidersErrors(t *testing.T) {
 	trigger := make(chan time.Time, 1)
-	provider := ProviderMock{trigger, nil, []error{errors.New("error fetching from source: rtve")}}
+	provider := NewProviderMock(trigger, nil, []error{errors.New("error fetching from source: rtve")})
 	writerMock := new(writerMock)
 	collector := Collector{
 		[]Provider{provider},
@@ -43,7 +68,7 @@ func TestCollectorLogsProvidersErrors(t *testing.T) {
 		log.New(writerMock, "", log.LstdFlags),
 	}
 
-	go collector.Run()
+	go collector.Run(context.Background())
 
 	trigger <- time.Now()
 	time.Sleep(1 * time.Millisecond)

@@ -60,19 +60,36 @@ func (kf *KeeperFinderFake) Remove(preview Preview) {
 	kf.Previews = filtered
 }
 
+func NewProviderMock(trigger chan time.Time, previews []Preview, errors []error) *ProviderMock {
+	return &ProviderMock{
+		trigger,
+		previews,
+		errors,
+		nil,
+	}
+}
+
 type ProviderMock struct {
 	Trigger  chan time.Time
 	Previews []Preview
 	Errors   []error
+	Ctx      context.Context
 }
 
-func (p ProviderMock) Provide(providers chan<- Preview, errs chan<- error, ctx context.Context) {
-	for range p.Trigger {
-		for _, preview := range p.Previews {
-			providers <- preview
-		}
-		for _, e := range p.Errors {
-			errs <- e
+func (p *ProviderMock) Provide(previews chan<- Preview, errs chan<- error, ctx context.Context) {
+	p.Ctx = ctx
+
+	for running := true; running; {
+		select {
+		case <-p.Trigger:
+			for _, preview := range p.Previews {
+				previews <- preview
+			}
+			for _, e := range p.Errors {
+				errs <- e
+			}
+		case <-ctx.Done():
+			running = false
 		}
 	}
 }
