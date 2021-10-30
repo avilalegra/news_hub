@@ -21,7 +21,8 @@ func TestCollector(t *testing.T) {
 		r,
 		log.Default(),
 	}
-	collector.Run()
+
+	go collector.Run()
 
 	triggerA <- time.Now()
 	time.Sleep(1 * time.Millisecond)
@@ -42,7 +43,7 @@ func TestCollectorLogsProvidersErrors(t *testing.T) {
 		log.New(writerMock, "", log.LstdFlags),
 	}
 
-	collector.Run()
+	go collector.Run()
 
 	trigger <- time.Now()
 	time.Sleep(1 * time.Millisecond)

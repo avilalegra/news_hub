@@ -54,16 +54,14 @@ func (c Collector) Run() {
 		go p.Provide(prvChan, errChan)
 	}
 
-	go func() {
-		for {
-			select {
-			case preview := <-prvChan:
-				c.Keeper.Store(preview)
-			case err := <-errChan:
-				c.Logger.Println(err)
-			}
+	for {
+		select {
+		case preview := <-prvChan:
+			c.Keeper.Store(preview)
+		case err := <-errChan:
+			c.Logger.Println(err)
 		}
-	}()
+	}
 }
 
 //Cleaner ensures that expired news are removed

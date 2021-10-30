@@ -18,7 +18,7 @@ func main() {
 		}
 	}()
 
-	factory.Collector().Run()
+	go factory.Collector().Run()
 	factory.Cleaner().Run()
 
 	fmt.Printf("App running at: %s\n", os.Getenv("ServerAddr"))
