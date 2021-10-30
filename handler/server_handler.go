@@ -15,6 +15,6 @@ func NewServerHttpHandler() http.Handler {
 
 func configRoutes(mux *http.ServeMux) {
 	mux.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
-	mux.Handle("/api/search", api.ApiSearchHandler{Finder: factory.Finder()})
+	mux.Handle("/api/search", api.SearchHandler{Finder: factory.Finder()})
 	mux.Handle("/news", web.SearchHandler{Finder: factory.Finder()})
 }

@@ -54,11 +54,11 @@ func newSearchResponse(previews []news.Preview) searchResponse {
 	}
 }
 
-type ApiSearchHandler struct {
+type SearchHandler struct {
 	Finder news.Finder
 }
 
-func (h ApiSearchHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h SearchHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	expr := r.URL.Query().Get("keywords")
 	previews := h.Finder.FindRelated(expr)
 	searchResponse := newSearchResponse(previews)
