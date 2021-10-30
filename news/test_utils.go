@@ -1,6 +1,7 @@
 package news
 
 import (
+	"context"
 	strip "github.com/grokify/html-strip-tags-go"
 	"html"
 	"regexp"
@@ -65,7 +66,7 @@ type ProviderMock struct {
 	Errors   []error
 }
 
-func (p ProviderMock) Provide(providers chan<- Preview, errs chan<- error) {
+func (p ProviderMock) Provide(providers chan<- Preview, errs chan<- error, ctx context.Context) {
 	for range p.Trigger {
 		for _, preview := range p.Previews {
 			providers <- preview

@@ -1,6 +1,7 @@
 package news
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"time"
@@ -22,7 +23,7 @@ type Preview struct {
 }
 
 type Provider interface {
-	Provide(chan<- Preview, chan<- error)
+	Provide(chan<- Preview, chan<- error, context.Context)
 }
 
 type Finder interface {
@@ -51,7 +52,7 @@ func (c Collector) Run() {
 	errChan := make(chan error)
 
 	for _, p := range c.Providers {
-		go p.Provide(prvChan, errChan)
+		go p.Provide(prvChan, errChan, context.TODO())
 	}
 
 	for {

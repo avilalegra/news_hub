@@ -2,6 +2,7 @@ package rss
 
 import (
 	"avilego.me/recent_news/news"
+	"context"
 	"errors"
 	"fmt"
 	"github.com/stretchr/testify/assert"
@@ -21,7 +22,7 @@ func TestRssProvider(t *testing.T) {
 			var errs []error
 			provider := NewRssNewsProvider(tData.sources, trigger)
 
-			go provider.Provide(previewsChan, errorsChan)
+			go provider.Provide(previewsChan, errorsChan, context.TODO())
 
 			trigger <- time.Now()
 			trigger <- time.Now()
@@ -43,6 +44,21 @@ func TestRssProvider(t *testing.T) {
 			assert.Equal(t, len(tData.errors)*2, len(errs))
 		})
 	}
+}
+
+func TestProviderContextCancellation(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.TODO())
+	provider := NewRssNewsProvider(nil, make(chan time.Time))
+	exit := make(chan bool)
+
+	go func() {
+		provider.Provide(nil, nil, ctx)
+		exit <- true
+	}()
+
+	cancel()
+	ok := <-exit
+	assert.True(t, ok)
 }
 
 var tsRssProvider = []struct {
