@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-const appConfFilePath = "config/app_config.yaml"
+var appConfFilePath = env.ProjDir() + "/config/app_config.yaml"
 
 var Current AppConfig
 
@@ -24,27 +24,16 @@ type RssNewsProvidersConfig struct {
 	DelayInMinutes int      `yaml:"delay"`
 }
 
-type Loader struct {
-	Reader io.Reader
-}
+type loader func() (*AppConfig, error)
 
-func (l Loader) LoadConfig() (*AppConfig, error) {
-	raw, err := io.ReadAll(l.Reader)
-	if err != nil {
-		panic(err)
-	}
+var defaultLoader loader
 
-	var appConfig AppConfig
-	err = yaml.Unmarshal(raw, &appConfig)
-	if err != nil {
-		return nil, err
-	}
+var configChanges = make(chan AppConfig)
 
-	return &appConfig, nil
-}
+var Subject <-chan AppConfig = configChanges
 
 func LoadConfig() error {
-	conf, err := defaultLoader.LoadConfig()
+	conf, err := defaultLoader()
 	if err != nil {
 		return err
 	}
@@ -59,26 +48,27 @@ func LoadConfig() error {
 	return nil
 }
 
-var configChanges = make(chan AppConfig)
+func newRawConfigLoader(raw []byte) loader {
+	return func() (*AppConfig, error) {
+		var appConfig AppConfig
+		err := yaml.Unmarshal(raw, &appConfig)
+		if err != nil {
+			return nil, err
+		}
 
-var Subject <-chan AppConfig = configChanges
-
-var defaultLoader Loader
-
-func newDefaultLoader() Loader {
-	reader, err := os.Open(env.ProjDir() + "/" + appConfFilePath)
-	if err != nil {
-		panic(err)
+		return &appConfig, nil
 	}
-	return Loader{reader}
 }
 
-func init() {
-	defaultLoader = newDefaultLoader()
-	if err := LoadConfig(); err != nil {
-		panic(err)
+func newFileConfigLoader(filePath string) loader {
+	return func() (*AppConfig, error) {
+		reader, err := os.Open(filePath)
+		if err != nil {
+			panic(err)
+		}
+		raw, _ := io.ReadAll(reader)
+		return newRawConfigLoader(raw)()
 	}
-	listenReloadSignal()
 }
 
 func listenReloadSignal() {
@@ -94,4 +84,12 @@ func listenReloadSignal() {
 			}
 		}
 	}()
+}
+
+func init() {
+	defaultLoader = newFileConfigLoader(appConfFilePath)
+	if err := LoadConfig(); err != nil {
+		panic(err)
+	}
+	listenReloadSignal()
 }
