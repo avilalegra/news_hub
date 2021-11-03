@@ -1,0 +1,11 @@
+
+rss_news_provider:
+  sources:
+    - "http://api2.rtve.es/rss/temas_noticias.xml"
+    - "http://rss.cnn.com/rss/edition_world.rss"
+    - "https://e00-elmundo.uecdn.es/elmundo/rss/espana.xml"
+    - "https://rss.elconfidencial.com/espana/"
+    - "https://e00-expansion.uecdn.es/rss/portada.xml"
+    - "https://www.phoronix.com/rss.php"
+    - "http://feeds2.feedburner.com/libertaddigital/portada"
+  delay: 3
