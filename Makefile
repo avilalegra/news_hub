@@ -14,3 +14,6 @@ stop:
 
 destroy:
 	@docker-compose down --rmi all
+
+config/reload:
+	@docker-compose exec go bash -c 'pgrep main | xargs kill -s SIGUSR1'
