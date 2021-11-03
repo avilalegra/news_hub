@@ -4,7 +4,10 @@ import (
 	"avilego.me/recent_news/env"
 	"gopkg.in/yaml.v3"
 	"io"
+	"log"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 )
 
@@ -57,6 +60,7 @@ func LoadConfig() error {
 }
 
 var configChanges = make(chan AppConfig)
+
 var Subject <-chan AppConfig = configChanges
 
 var defaultLoader Loader
@@ -74,4 +78,20 @@ func init() {
 	if err := LoadConfig(); err != nil {
 		panic(err)
 	}
+	listenReloadSignal()
+}
+
+func listenReloadSignal() {
+	s := make(chan os.Signal, 1)
+	signal.Notify(s, syscall.SIGUSR1)
+	go func() {
+		for {
+			<-s
+			if err := LoadConfig(); err != nil {
+				log.Println(err)
+			} else {
+				log.Println("app config reloaded")
+			}
+		}
+	}()
 }
