@@ -8,26 +8,9 @@ import (
 )
 
 func TestConfigLoaderReturnsConfig(t *testing.T) {
-	config := `
-rss_news_provider:
-  sources:
-    - http://api2.rtve.es/rss/temas_noticias.xml
-    - http://rss.cnn.com/rss/edition_world.rss
-  delay: 5
-`
-	loader := Loader{strings.NewReader(config)}
+	loader := Loader{strings.NewReader(tsConfigs[0].yaml)}
 	appConfig, _ := loader.LoadConfig()
-
-	assert.Equal(t,
-		AppConfig{
-			RssNewsProvidersConfig{
-				Sources: []string{
-					"http://api2.rtve.es/rss/temas_noticias.xml",
-					"http://rss.cnn.com/rss/edition_world.rss",
-				},
-				DelayInMinutes: 5,
-			},
-		}, *appConfig)
+	assert.Equal(t, tsConfigs[0].config, *appConfig)
 }
 
 func TestConfigLoaderReturnsErrorOnBadConfig(t *testing.T) {
@@ -45,27 +28,11 @@ rss_news_provider:
 }
 
 func TestLoadConfigFuncUpdatesAppConfig(t *testing.T) {
-	config := `
-rss_news_provider:
-  sources:
-    - http://api2.rtve.es/rss/temas_noticias.xml
-    - http://rss.cnn.com/rss/edition_world.rss
-  delay: 5
-`
-	defaultLoader = Loader{strings.NewReader(config)}
+	defaultLoader = Loader{strings.NewReader(tsConfigs[0].yaml)}
 
 	LoadConfig()
 
-	assert.Equal(t,
-		AppConfig{
-			RssNewsProvidersConfig{
-				Sources: []string{
-					"http://api2.rtve.es/rss/temas_noticias.xml",
-					"http://rss.cnn.com/rss/edition_world.rss",
-				},
-				DelayInMinutes: 5,
-			},
-		}, Current)
+	assert.Equal(t, tsConfigs[0].config, Current)
 }
 
 func TestLoadConfigFuncReturnsErrorOnBadConfig(t *testing.T) {
@@ -76,30 +43,34 @@ rss_news_provider:
   delay: 5
 `
 	defaultLoader = Loader{strings.NewReader(config)}
-
 	err := LoadConfig()
-
 	assert.NotNil(t, err)
 }
 
 func TestLoadConfigFuncNotifyChanges(t *testing.T) {
-	config := `
-rss_news_provider:
-  sources:
-    - http://api2.rtve.es/rss/temas_noticias.xml
-    - http://rss.cnn.com/rss/edition_world.rss
-  delay: 5
-`
-	defaultLoader = Loader{strings.NewReader(config)}
-
 	var conf AppConfig
+	defaultLoader = Loader{strings.NewReader(tsConfigs[0].yaml)}
 	go func() {
 		conf = <-Subject
 	}()
 
 	LoadConfig()
 	<-time.After(1 * time.Millisecond)
-	assert.Equal(t,
+	assert.Equal(t, tsConfigs[0].config, conf)
+}
+
+var tsConfigs = []struct {
+	yaml   string
+	config AppConfig
+}{
+	{
+		`
+rss_news_provider:
+  sources:
+    - http://api2.rtve.es/rss/temas_noticias.xml
+    - http://rss.cnn.com/rss/edition_world.rss
+  delay: 5
+`,
 		AppConfig{
 			RssNewsProvidersConfig{
 				Sources: []string{
@@ -108,5 +79,6 @@ rss_news_provider:
 				},
 				DelayInMinutes: 5,
 			},
-		}, conf)
+		},
+	},
 }
