@@ -1,6 +1,7 @@
 package main
 
 import (
+	"avilego.me/recent_news/config"
 	"avilego.me/recent_news/factory"
 	"avilego.me/recent_news/handler"
 	"avilego.me/recent_news/persistence"
@@ -18,7 +19,7 @@ func main() {
 		}
 	}()
 
-	go factory.Collector().Run(context.Background())
+	monitorConfigDependantServices()
 	go factory.Cleaner().Run()
 
 	fmt.Printf("App running at: %s\n", os.Getenv("ServerAddr"))
@@ -27,4 +28,21 @@ func main() {
 	log.Fatal(
 		http.ListenAndServe(os.Getenv("ServerAddr"), handler.NewServerHttpHandler()),
 	)
+}
+
+func monitorConfigDependantServices() {
+	runServices := func(ctx context.Context) {
+		go factory.Collector().Run(ctx)
+	}
+
+	go func() {
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
+		runServices(ctx)
+		for range config.Subject {
+			cancel()
+			runServices(ctx)
+		}
+	}()
 }
