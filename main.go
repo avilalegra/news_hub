@@ -34,14 +34,13 @@ func monitorConfigDependantServices() {
 	runServices := func(ctx context.Context) {
 		go factory.Collector().Run(ctx)
 	}
+	ctx, cancel := context.WithCancel(context.Background())
+	runServices(ctx)
 
 	go func() {
-		ctx, cancel := context.WithCancel(context.Background())
-		defer cancel()
-
-		runServices(ctx)
 		for range config.Subject {
 			cancel()
+			ctx, cancel = context.WithCancel(context.Background())
 			runServices(ctx)
 		}
 	}()
