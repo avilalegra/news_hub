@@ -1,6 +1,7 @@
 package factory
 
 import (
+	"avilego.me/recent_news/config"
 	"avilego.me/recent_news/env"
 	"avilego.me/recent_news/news"
 	"avilego.me/recent_news/persistence"
@@ -10,22 +11,13 @@ import (
 	"time"
 )
 
-var providers = []news.Provider{
-	rss.NewRssNewsProvider(
-		[]rss.Source{
-			rss.NewSource("http://api2.rtve.es/rss/temas_noticias.xml"),
-			rss.NewSource("http://rss.cnn.com/rss/edition_world.rss"),
-			rss.NewSource("https://e00-elmundo.uecdn.es/elmundo/rss/espana.xml"),
-			rss.NewSource("https://rss.elconfidencial.com/espana/"),
-			rss.NewSource("https://e00-expansion.uecdn.es/rss/portada.xml"),
-			rss.NewSource("https://www.phoronix.com/rss.php"),
-			rss.NewSource("http://feeds2.feedburner.com/libertaddigital/portada"),
-			rss.NewSource("https://www.lavanguardia.com/rss/home.xml"),
-			rss.NewSource("https://web.gencat.cat/es/actualitat/rss.html"),
-			rss.NewSource("https://www.abc.es/rss/feeds/abcPortada.xml"),
-		},
-		time.Tick(5*time.Minute),
-	),
+func rssProvider() news.Provider {
+	var sources []rss.Source
+	for _, url := range config.Current.RNPConfig.Sources {
+		sources = append(sources, rss.NewSource(url))
+	}
+	interval := time.Duration(config.Current.RNPConfig.DelayInMinutes) * time.Minute
+	return rss.NewRssNewsProvider(sources, time.Tick(interval))
 }
 
 func logger() *log.Logger {
@@ -35,7 +27,7 @@ func logger() *log.Logger {
 
 func Collector() news.Collector {
 	return news.Collector{
-		Providers: providers,
+		Providers: []news.Provider{rssProvider()},
 		Keeper:    Keeper(),
 		Logger:    logger(),
 	}
