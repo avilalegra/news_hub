@@ -80,11 +80,29 @@ func TestCleaner(t *testing.T) {
 	kf := KeeperFinderFake{Previews: tsCleaner}
 	cleaner := Cleaner{&kf, trigger, int64((24 * time.Hour).Seconds())}
 
-	go cleaner.Run()
+	go cleaner.Run(context.Background())
 	trigger <- time.Now()
 	close(trigger)
 	<-time.After(1 * time.Millisecond)
 	assert.Equal(t, 2, len(kf.Previews))
+}
+
+func TestCleanerContextCancellation(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	trigger := make(chan time.Time, 1)
+	kf := KeeperFinderFake{Previews: tsCleaner}
+	cleaner := Cleaner{&kf, trigger, int64((24 * time.Hour).Seconds())}
+
+	exit := make(chan bool)
+
+	go func() {
+		cleaner.Run(ctx)
+		exit <- true
+	}()
+	<-time.After(1 * time.Millisecond)
+	cancel()
+
+	assert.True(t, <-exit)
 }
 
 type writerMock struct {

@@ -74,13 +74,18 @@ type Cleaner struct {
 	Ttl          int64
 }
 
-func (c Cleaner) Run() {
-	for range c.Trigger {
-		fmt.Println("running cleaner")
-		limit := time.Now().Unix() - c.Ttl
-		expired := c.KeeperFinder.FindBefore(limit)
-		for _, preview := range expired {
-			c.KeeperFinder.Remove(preview)
+func (c Cleaner) Run(ctx context.Context) {
+	for running := true; running; {
+		select {
+		case <-c.Trigger:
+			fmt.Println("running cleaner")
+			limit := time.Now().Unix() - c.Ttl
+			expired := c.KeeperFinder.FindBefore(limit)
+			for _, preview := range expired {
+				c.KeeperFinder.Remove(preview)
+			}
+		case <-ctx.Done():
+			running = false
 		}
 	}
 }

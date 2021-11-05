@@ -20,7 +20,7 @@ func main() {
 	}()
 
 	monitorConfigDependantServices()
-	go factory.Cleaner().Run()
+	go factory.Cleaner().Run(context.Background())
 
 	fmt.Printf("App running at: %s\n", os.Getenv("ServerAddr"))
 	fmt.Println("Mongo express running at: localhost:8081")
