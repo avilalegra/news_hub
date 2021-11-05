@@ -18,6 +18,26 @@ type AppConfig struct {
 	RNPConfig RssNewsProvidersConfig `yaml:"rss_news_provider"`
 }
 
+func (c AppConfig) validate() (validationError error) {
+	defer func() {
+		if err := recover(); err != nil {
+			validationError = err.(error)
+		}
+	}()
+	mustValidate := func(validator func() error) {
+		if err := validator(); err != nil {
+			panic(err)
+		}
+	}
+
+	mustValidate(c.RNPConfig.validate)
+
+	if validationError != nil {
+		return validationError
+	}
+	return
+}
+
 type RssNewsProvidersConfig struct {
 	Sources       []string `yaml:",flow"`
 	MinutesPeriod int      `yaml:"period"`

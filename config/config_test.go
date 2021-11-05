@@ -117,6 +117,15 @@ func TestRssNewsProviderConfigValidation(t *testing.T) {
 	}
 }
 
+func TestAppConfigValidation(t *testing.T) {
+	for i, tData := range invalidAppConfig {
+		t.Run(fmt.Sprintf("sample %d", i), func(t *testing.T) {
+			err := tData.conf.validate()
+			assert.Equal(t, tData.err, err)
+		})
+	}
+}
+
 var validConfigs = []struct {
 	yaml   string
 	config AppConfig
@@ -164,6 +173,18 @@ rss_news_provider:
     http://api2.rtve.es/rss/temas_noticias.xml
   period: 5
 `,
+}
+
+var invalidAppConfig = []struct {
+	conf AppConfig
+	err  error
+}{
+	{
+		AppConfig{
+			invalidRssNewsProvidersConfig[0].conf,
+		},
+		invalidRssNewsProvidersConfig[0].err,
+	},
 }
 
 var invalidRssNewsProvidersConfig = []struct {
