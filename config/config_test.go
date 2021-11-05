@@ -117,6 +117,15 @@ func TestRssNewsProviderConfigValidation(t *testing.T) {
 	}
 }
 
+func TestCleanerConfigValidation(t *testing.T) {
+	for i, tData := range invalidCleanerConfig {
+		t.Run(fmt.Sprintf("sample %d", i), func(t *testing.T) {
+			err := tData.conf.validate()
+			assert.Equal(t, tData.err, err)
+		})
+	}
+}
+
 func TestAppConfigValidation(t *testing.T) {
 	for i, tData := range invalidAppConfig {
 		t.Run(fmt.Sprintf("sample %d", i), func(t *testing.T) {
@@ -198,7 +207,7 @@ var invalidRssNewsProvidersConfig = []struct {
 			},
 			MinutesPeriod: 0,
 		},
-		errors.New("invalid rss provider config: minutes period should be a positive number"),
+		errors.New("invalid rss provider config: period should be a positive number"),
 	},
 	{
 		RssNewsProvidersConfig{
@@ -206,5 +215,23 @@ var invalidRssNewsProvidersConfig = []struct {
 			MinutesPeriod: 1,
 		},
 		errors.New("invalid rss provider config: at least one source required"),
+	},
+}
+
+var invalidCleanerConfig = []struct {
+	conf CleanerConfig
+	err  error
+}{
+	{
+		CleanerConfig{0, 2},
+		errors.New("invalid cleaner config: ttl should be a positive number"),
+	},
+	{
+		CleanerConfig{10, 30},
+		errors.New("invalid cleaner config: ttl should be greater than period"),
+	},
+	{
+		CleanerConfig{30, -10},
+		errors.New("invalid cleaner config: period should be a positive number"),
 	},
 }

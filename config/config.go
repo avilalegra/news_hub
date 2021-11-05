@@ -45,10 +45,28 @@ type RssNewsProvidersConfig struct {
 
 func (c RssNewsProvidersConfig) validate() error {
 	if c.MinutesPeriod <= 0 {
-		return errors.New("invalid rss provider config: minutes period should be a positive number")
+		return errors.New("invalid rss provider config: period should be a positive number")
 	}
 	if len(c.Sources) == 0 {
 		return errors.New("invalid rss provider config: at least one source required")
+	}
+	return nil
+}
+
+type CleanerConfig struct {
+	Ttl           int `yaml:"ttl"`
+	MinutesPeriod int `yaml:"period"`
+}
+
+func (c CleanerConfig) validate() error {
+	if c.Ttl <= 0 {
+		return errors.New("invalid cleaner config: ttl should be a positive number")
+	}
+	if c.Ttl < c.MinutesPeriod {
+		return errors.New("invalid cleaner config: ttl should be greater than period")
+	}
+	if c.MinutesPeriod <= 0 {
+		return errors.New("invalid cleaner config: period should be a positive number")
 	}
 	return nil
 }
