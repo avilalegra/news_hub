@@ -42,9 +42,12 @@ func Keeper() news.Keeper {
 }
 
 func Cleaner() news.Cleaner {
+	ttl := config.Current.CleanerConfig.Ttl * 60
+	interval := time.Duration(config.Current.CleanerConfig.MinutesPeriod) * time.Minute
+
 	return news.Cleaner{
 		KeeperFinder: persistence.NewMongoKeeperFinder(),
-		Trigger:      time.Tick(1 * time.Hour),
-		Ttl:          int64((24 * time.Hour).Seconds()),
+		Trigger:      time.Tick(interval),
+		Ttl:          int64(ttl),
 	}
 }
