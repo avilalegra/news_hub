@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
@@ -107,6 +108,15 @@ func TestLoadConfigFuncNotifyChanges(t *testing.T) {
 	assert.Equal(t, validConfigs[0].config, conf)
 }
 
+func TestRssNewsProviderConfigValidation(t *testing.T) {
+	for i, tData := range invalidRssNewsProvidersConfig {
+		t.Run(fmt.Sprintf("sample %d", i), func(t *testing.T) {
+			err := tData.conf.validate()
+			assert.Equal(t, tData.err, err)
+		})
+	}
+}
+
 var validConfigs = []struct {
 	yaml   string
 	config AppConfig
@@ -154,4 +164,26 @@ rss_news_provider:
     http://api2.rtve.es/rss/temas_noticias.xml
   period: 5
 `,
+}
+
+var invalidRssNewsProvidersConfig = []struct {
+	conf RssNewsProvidersConfig
+	err  error
+}{
+	{
+		RssNewsProvidersConfig{
+			Sources: []string{
+				"http://rss.cnn.com/rss/edition_world.rss",
+			},
+			MinutesPeriod: 0,
+		},
+		errors.New("invalid rss provider config: minutes period should be a positive number"),
+	},
+	{
+		RssNewsProvidersConfig{
+			Sources:       []string{},
+			MinutesPeriod: 1,
+		},
+		errors.New("invalid rss provider config: at least one source required"),
+	},
 }

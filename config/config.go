@@ -2,6 +2,7 @@ package config
 
 import (
 	"avilego.me/recent_news/env"
+	"errors"
 	"gopkg.in/yaml.v3"
 	"io"
 	"log"
@@ -20,6 +21,16 @@ type AppConfig struct {
 type RssNewsProvidersConfig struct {
 	Sources       []string `yaml:",flow"`
 	MinutesPeriod int      `yaml:"period"`
+}
+
+func (c RssNewsProvidersConfig) validate() error {
+	if c.MinutesPeriod <= 0 {
+		return errors.New("invalid rss provider config: minutes period should be a positive number")
+	}
+	if len(c.Sources) == 0 {
+		return errors.New("invalid rss provider config: at least one source required")
+	}
+	return nil
 }
 
 type parser func() (*AppConfig, error)
