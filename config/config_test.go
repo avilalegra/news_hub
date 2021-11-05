@@ -146,6 +146,10 @@ rss_news_provider:
     - http://api2.rtve.es/rss/temas_noticias.xml
     - http://rss.cnn.com/rss/edition_world.rss
   period: 5
+
+news_cleaner:
+  ttl: 10
+  period: 30
 `,
 		AppConfig{
 			RssNewsProvidersConfig{
@@ -155,6 +159,7 @@ rss_news_provider:
 				},
 				MinutesPeriod: 5,
 			},
+			CleanerConfig{10, 30},
 		},
 	},
 	{
@@ -163,6 +168,10 @@ rss_news_provider:
   sources:
     - http://rss.cnn.com/rss/edition_world.rss
   period: 1
+
+news_cleaner:
+  ttl: 20
+  period: 50
 `,
 		AppConfig{
 			RssNewsProvidersConfig{
@@ -171,6 +180,7 @@ rss_news_provider:
 				},
 				MinutesPeriod: 1,
 			},
+			CleanerConfig{20, 50},
 		},
 	},
 }
@@ -191,8 +201,16 @@ var invalidAppConfig = []struct {
 	{
 		AppConfig{
 			invalidRssNewsProvidersConfig[0].conf,
+			CleanerConfig{},
 		},
 		invalidRssNewsProvidersConfig[0].err,
+	},
+	{
+		AppConfig{
+			validConfigs[0].config.RNPConfig,
+			invalidCleanerConfig[0].conf,
+		},
+		invalidCleanerConfig[0].err,
 	},
 }
 

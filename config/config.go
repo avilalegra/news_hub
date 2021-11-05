@@ -15,7 +15,8 @@ import (
 var appConfFilePath = env.ProjDir() + "/config/app_config.yaml"
 
 type AppConfig struct {
-	RNPConfig RssNewsProvidersConfig `yaml:"rss_news_provider"`
+	RNPConfig     RssNewsProvidersConfig `yaml:"rss_news_provider"`
+	CleanerConfig CleanerConfig          `yaml:"news_cleaner"`
 }
 
 func (c AppConfig) validate() (validationError error) {
@@ -31,6 +32,7 @@ func (c AppConfig) validate() (validationError error) {
 	}
 
 	mustValidate(c.RNPConfig.validate)
+	mustValidate(c.CleanerConfig.validate)
 
 	if validationError != nil {
 		return validationError

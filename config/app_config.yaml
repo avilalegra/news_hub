@@ -9,3 +9,7 @@ rss_news_provider:
     - "https://www.phoronix.com/rss.php"
     - "http://feeds2.feedburner.com/libertaddigital/portada"
   period: 5
+
+news_cleaner:
+  ttl: 1440 #24H
+  period: 30
