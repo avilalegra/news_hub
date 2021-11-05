@@ -16,7 +16,7 @@ func rssProvider() news.Provider {
 	for _, url := range config.Current.RNPConfig.Sources {
 		sources = append(sources, rss.NewSource(url))
 	}
-	interval := time.Duration(config.Current.RNPConfig.DelayInMinutes) * time.Minute
+	interval := time.Duration(config.Current.RNPConfig.MinutesPeriod) * time.Minute
 	return rss.NewRssNewsProvider(sources, time.Tick(interval))
 }
 

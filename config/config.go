@@ -13,27 +13,50 @@ import (
 
 var appConfFilePath = env.ProjDir() + "/config/app_config.yaml"
 
-var Current AppConfig
-
 type AppConfig struct {
 	RNPConfig RssNewsProvidersConfig `yaml:"rss_news_provider"`
 }
 
 type RssNewsProvidersConfig struct {
-	Sources        []string `yaml:",flow"`
-	DelayInMinutes int      `yaml:"delay"`
+	Sources       []string `yaml:",flow"`
+	MinutesPeriod int      `yaml:"period"`
 }
 
-type loader func() (*AppConfig, error)
+type parser func() (*AppConfig, error)
 
-var defaultLoader loader
+var defaultParser parser
+
+func newRawConfigParser(raw []byte) parser {
+	return func() (*AppConfig, error) {
+		var appConfig AppConfig
+		err := yaml.Unmarshal(raw, &appConfig)
+		if err != nil {
+			return nil, err
+		}
+
+		return &appConfig, nil
+	}
+}
+
+func newFileConfigParser(filePath string) parser {
+	return func() (*AppConfig, error) {
+		reader, err := os.Open(filePath)
+		if err != nil {
+			panic(err)
+		}
+		raw, _ := io.ReadAll(reader)
+		return newRawConfigParser(raw)()
+	}
+}
 
 var configChanges = make(chan AppConfig)
 
 var Subject <-chan AppConfig = configChanges
 
+var Current AppConfig
+
 func LoadConfig() error {
-	conf, err := defaultLoader()
+	conf, err := defaultParser()
 	if err != nil {
 		return err
 	}
@@ -46,29 +69,6 @@ func LoadConfig() error {
 	}
 
 	return nil
-}
-
-func newRawConfigLoader(raw []byte) loader {
-	return func() (*AppConfig, error) {
-		var appConfig AppConfig
-		err := yaml.Unmarshal(raw, &appConfig)
-		if err != nil {
-			return nil, err
-		}
-
-		return &appConfig, nil
-	}
-}
-
-func newFileConfigLoader(filePath string) loader {
-	return func() (*AppConfig, error) {
-		reader, err := os.Open(filePath)
-		if err != nil {
-			panic(err)
-		}
-		raw, _ := io.ReadAll(reader)
-		return newRawConfigLoader(raw)()
-	}
 }
 
 func listenReloadSignal() {
@@ -87,7 +87,7 @@ func listenReloadSignal() {
 }
 
 func init() {
-	defaultLoader = newFileConfigLoader(appConfFilePath)
+	defaultParser = newFileConfigParser(appConfFilePath)
 	if err := LoadConfig(); err != nil {
 		panic(err)
 	}

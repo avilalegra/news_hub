@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"log"
@@ -9,85 +10,104 @@ import (
 	"time"
 )
 
-func TestRawConfigLoaderReturnsConfig(t *testing.T) {
-	loader := newRawConfigLoader([]byte(tsConfigs[0].yaml))
-	appConfig, _ := loader()
-	assert.Equal(t, tsConfigs[0].config, *appConfig)
+func TestRawConfigParserWithValidConfig(t *testing.T) {
+	for i, tData := range validConfigs {
+		t.Run(fmt.Sprintf("sample %d", i), func(t *testing.T) {
+			parser := newRawConfigParser([]byte(tData.yaml))
+			appConfig, _ := parser()
+			assert.Equal(t, tData.config, *appConfig)
+		})
+	}
 }
 
-func TestRawConfigLoaderReturnsErrorOnBadConfig(t *testing.T) {
-	config := `
-rss_news_provider:
-  sources
-    http://api2.rtve.es/rss/temas_noticias.xml
-  delay: 5
-`
-	loader := newRawConfigLoader([]byte(config))
-	appConfig, err := loader()
+func TestRawConfigParserWithInvalidYaml(t *testing.T) {
+	for i, conf := range invalidYaml {
+		t.Run(fmt.Sprintf("sample %d", i), func(t *testing.T) {
+			parser := newRawConfigParser([]byte(conf))
+			appConfig, err := parser()
 
-	assert.Nil(t, appConfig)
-	assert.NotNil(t, err)
+			assert.Nil(t, appConfig)
+			assert.NotNil(t, err)
+		})
+	}
 }
 
-func TestFileConfigLoader(t *testing.T) {
+func TestFileConfigParserWithValidConfig(t *testing.T) {
 	file, err := ioutil.TempFile("", "")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer os.Remove(file.Name())
-	loader := newFileConfigLoader(file.Name())
 
-	if _, err := file.Write([]byte(tsConfigs[0].yaml)); err != nil {
-		panic(err)
+	for _, tData := range validConfigs {
+		file.Truncate(0)
+		file.Seek(0, 0)
+
+		if _, err := file.Write([]byte(tData.yaml)); err != nil {
+			panic(err)
+		}
+
+		parser := newFileConfigParser(file.Name())
+		appConfig, _ := parser()
+		assert.Equal(t, tData.config, *appConfig)
 	}
+}
 
-	appConfig, _ := loader()
-	assert.Equal(t, tsConfigs[0].config, *appConfig)
-
-	file.Truncate(0)
-	file.Seek(0, 0)
-
-	if _, err := file.Write([]byte(tsConfigs[1].yaml)); err != nil {
-		panic(err)
+func TestFileConfigParserWithInvalidYaml(t *testing.T) {
+	file, err := ioutil.TempFile("", "")
+	if err != nil {
+		log.Fatal(err)
 	}
+	defer os.Remove(file.Name())
+	for _, conf := range invalidYaml {
+		file.Truncate(0)
+		file.Seek(0, 0)
 
-	appConfig, _ = loader()
-	assert.Equal(t, tsConfigs[1].config, *appConfig)
+		if _, err := file.Write([]byte(conf)); err != nil {
+			panic(err)
+		}
+
+		parser := newFileConfigParser(file.Name())
+		appConfig, err := parser()
+
+		assert.Nil(t, appConfig)
+		assert.NotNil(t, err)
+	}
 }
 
 func TestLoadConfigFuncUpdatesAppConfig(t *testing.T) {
-	defaultLoader = newRawConfigLoader([]byte(tsConfigs[0].yaml))
-
-	LoadConfig()
-
-	assert.Equal(t, tsConfigs[0].config, Current)
+	for i, tData := range validConfigs {
+		t.Run(fmt.Sprintf("sample %d", i), func(t *testing.T) {
+			defaultParser = newRawConfigParser([]byte(tData.yaml))
+			LoadConfig()
+			assert.Equal(t, tData.config, Current)
+		})
+	}
 }
 
-func TestLoadConfigFuncReturnsErrorOnBadConfig(t *testing.T) {
-	config := `
-rss_news_provider:
-  sources
-    http://api2.rtve.es/rss/temas_noticias.xml
-  delay: 5
-`
-	defaultLoader = newRawConfigLoader([]byte(config))
-	err := LoadConfig()
-	assert.NotNil(t, err)
+func TestLoadConfigFuncReturnsErrorOnInvalidYaml(t *testing.T) {
+	for i, conf := range invalidYaml {
+		t.Run(fmt.Sprintf("sample %d", i), func(t *testing.T) {
+			defaultParser = newRawConfigParser([]byte(conf))
+			err := LoadConfig()
+			assert.NotNil(t, err)
+		})
+	}
 }
 
 func TestLoadConfigFuncNotifyChanges(t *testing.T) {
 	var conf AppConfig
-	defaultLoader = newRawConfigLoader([]byte(tsConfigs[0].yaml))
+	defaultParser = newRawConfigParser([]byte(validConfigs[0].yaml))
 	go func() {
 		conf = <-Subject
 	}()
 
 	LoadConfig()
 	<-time.After(1 * time.Millisecond)
-	assert.Equal(t, tsConfigs[0].config, conf)
+	assert.Equal(t, validConfigs[0].config, conf)
 }
 
-var tsConfigs = []struct {
+var validConfigs = []struct {
 	yaml   string
 	config AppConfig
 }{
@@ -97,7 +117,7 @@ rss_news_provider:
   sources:
     - http://api2.rtve.es/rss/temas_noticias.xml
     - http://rss.cnn.com/rss/edition_world.rss
-  delay: 5
+  period: 5
 `,
 		AppConfig{
 			RssNewsProvidersConfig{
@@ -105,7 +125,7 @@ rss_news_provider:
 					"http://api2.rtve.es/rss/temas_noticias.xml",
 					"http://rss.cnn.com/rss/edition_world.rss",
 				},
-				DelayInMinutes: 5,
+				MinutesPeriod: 5,
 			},
 		},
 	},
@@ -114,15 +134,24 @@ rss_news_provider:
 rss_news_provider:
   sources:
     - http://rss.cnn.com/rss/edition_world.rss
-  delay: 1
+  period: 1
 `,
 		AppConfig{
 			RssNewsProvidersConfig{
 				Sources: []string{
 					"http://rss.cnn.com/rss/edition_world.rss",
 				},
-				DelayInMinutes: 1,
+				MinutesPeriod: 1,
 			},
 		},
 	},
+}
+
+var invalidYaml = []string{
+	`
+rss_news_provider:
+  sources
+    http://api2.rtve.es/rss/temas_noticias.xml
+  period: 5
+`,
 }

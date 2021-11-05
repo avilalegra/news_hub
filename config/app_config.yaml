@@ -8,4 +8,4 @@ rss_news_provider:
     - "https://e00-expansion.uecdn.es/rss/portada.xml"
     - "https://www.phoronix.com/rss.php"
     - "http://feeds2.feedburner.com/libertaddigital/portada"
-  delay: 3
+  period: 5
