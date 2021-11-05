@@ -76,7 +76,7 @@ type ProviderMock struct {
 	Ctx      context.Context
 }
 
-func (p *ProviderMock) Provide(previews chan<- Preview, errs chan<- error, ctx context.Context) {
+func (p *ProviderMock) Provide(ctx context.Context, previews chan<- Preview, errs chan<- error) {
 	p.Ctx = ctx
 
 	for running := true; running; {

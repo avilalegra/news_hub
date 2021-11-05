@@ -23,7 +23,7 @@ type Preview struct {
 }
 
 type Provider interface {
-	Provide(chan<- Preview, chan<- error, context.Context)
+	Provide(context.Context, chan<- Preview, chan<- error)
 }
 
 type Finder interface {
@@ -52,7 +52,7 @@ func (c Collector) Run(ctx context.Context) {
 	errChan := make(chan error)
 
 	for _, p := range c.Providers {
-		go p.Provide(prvChan, errChan, ctx)
+		go p.Provide(ctx, prvChan, errChan)
 	}
 
 	for running := true; running; {

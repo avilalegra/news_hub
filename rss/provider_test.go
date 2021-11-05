@@ -22,7 +22,7 @@ func TestRssProvider(t *testing.T) {
 			var errs []error
 			provider := NewRssNewsProvider(tData.sources, trigger)
 
-			go provider.Provide(previewsChan, errorsChan, context.TODO())
+			go provider.Provide(context.TODO(), previewsChan, errorsChan)
 
 			trigger <- time.Now()
 			trigger <- time.Now()
@@ -52,7 +52,7 @@ func TestProviderContextCancellation(t *testing.T) {
 	exit := make(chan bool)
 
 	go func() {
-		provider.Provide(nil, nil, ctx)
+		provider.Provide(ctx, nil, nil)
 		exit <- true
 	}()
 

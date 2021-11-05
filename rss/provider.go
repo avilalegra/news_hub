@@ -20,7 +20,7 @@ type NewsProvider struct {
 	interval <-chan time.Time
 }
 
-func (p NewsProvider) Provide(previewsChan chan<- news.Preview, errorsChan chan<- error, ctx context.Context) {
+func (p NewsProvider) Provide(ctx context.Context, previewsChan chan<- news.Preview, errorsChan chan<- error) {
 	for running := true; running; {
 		select {
 		case <-p.interval:
