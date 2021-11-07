@@ -19,7 +19,7 @@ func TestApiSearchIntegration(t *testing.T) {
 	server := httptest.NewServer(NewServerHttpHandler())
 	defer server.Close()
 
-	resp, err := http.Get(server.URL + "/api/search?keywords=AMD")
+	resp, err := http.Get(server.URL + "/api/news?keywords=AMD")
 	if err != nil {
 		panic(err)
 	}
