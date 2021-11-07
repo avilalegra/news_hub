@@ -15,7 +15,7 @@ func TestRssProviderSendPreviews(t *testing.T) {
 		t.Run(fmt.Sprintf("sample %d", i), func(t *testing.T) {
 			t.Parallel()
 
-			previews, errs := collectProvider(tData.sources)
+			previews, errs := collectProvider(tData.sources, 1)
 
 			assert.Empty(t, errs)
 			for _, p := range tData.previews {
@@ -30,7 +30,7 @@ func TestRssProviderSendErrors(t *testing.T) {
 		t.Run(fmt.Sprintf("sample %d", i), func(t *testing.T) {
 			t.Parallel()
 
-			previews, errs := collectProvider(tData.sources)
+			previews, errs := collectProvider(tData.sources, 1)
 
 			assert.Empty(t, previews)
 			assert.Equal(t, len(tData.errors), len(errs))
@@ -53,7 +53,17 @@ func TestProviderContextCancellation(t *testing.T) {
 	assert.True(t, ok)
 }
 
-func collectProvider(sources []Source) (previews []news.Preview, errors []error) {
+func TestRssProviderFetchSourcesAtLeastOnceWhenStarted(t *testing.T) {
+	tData := tsProviderSendPreviews[0]
+	previews, errs := collectProvider(tData.sources, 0)
+
+	assert.Empty(t, errs)
+	for _, p := range tData.previews {
+		assert.Contains(t, previews, p)
+	}
+}
+
+func collectProvider(sources []Source, times int) (previews []news.Preview, errors []error) {
 	previewsChan := make(chan news.Preview)
 	errorsChan := make(chan error)
 	waitProvider := make(chan bool)
@@ -78,7 +88,9 @@ func collectProvider(sources []Source) (previews []news.Preview, errors []error)
 		waitProvider <- true
 	}()
 
-	trigger <- time.Now()
+	for i := 0; i < times; i++ {
+		trigger <- time.Now()
+	}
 	cancel()
 	<-waitProvider
 

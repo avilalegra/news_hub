@@ -21,6 +21,8 @@ type Provider struct {
 }
 
 func (p Provider) Provide(ctx context.Context, previewsChan chan<- news.Preview, errorsChan chan<- error) {
+	p.fetchSourcesNews(previewsChan, errorsChan)
+
 	for running := true; running; {
 		select {
 		case <-p.interval:
