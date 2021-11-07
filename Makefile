@@ -1,3 +1,6 @@
+run/local: run/dev
+	@xdg-open http://localhost:8085
+
 run/dev:
 	@docker-compose up -d
 
