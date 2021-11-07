@@ -1,14 +1,18 @@
 
 rss_news_provider:
   sources:
+    - "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/portada"
+    - "http://ep00.epimg.net/rss/tags/ultimas_noticias.xml"
+    - "https://www.lavanguardia.com/rss/home.xml"
     - "http://api2.rtve.es/rss/temas_noticias.xml"
-    - "http://rss.cnn.com/rss/edition_world.rss"
     - "https://e00-elmundo.uecdn.es/elmundo/rss/espana.xml"
-    - "https://rss.elconfidencial.com/espana/"
+    - "https://okdiario.com/feed"
     - "https://e00-expansion.uecdn.es/rss/portada.xml"
-    - "https://www.phoronix.com/rss.php"
     - "http://feeds2.feedburner.com/libertaddigital/portada"
-  period: 5
+    - "https://www.abc.es/rss/feeds/abc_ultima.xml"
+    - "https://www.abc.es/rss/feeds/abcPortada.xml"
+    - "https://periodistadigital.webnode.es/rss/all.xml"
+  period: 1
 
 news_cleaner:
   ttl: 1440 #24H
