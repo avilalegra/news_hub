@@ -10,45 +10,37 @@ import (
 	"time"
 )
 
-//TODO: Simplify this test
-func TestRssProvider(t *testing.T) {
-	for i, tData := range tsRssProvider {
+func TestRssProviderSendPreviews(t *testing.T) {
+	for i, tData := range tsProviderSendPreviews {
 		t.Run(fmt.Sprintf("sample %d", i), func(t *testing.T) {
 			t.Parallel()
-			trigger := make(chan time.Time, 2)
-			previewsChan := make(chan news.Preview, 10)
-			errorsChan := make(chan error, 10)
-			var previews []news.Preview
-			var errs []error
-			provider := NewRssNewsProvider(tData.sources, trigger)
 
-			go provider.Provide(context.TODO(), previewsChan, errorsChan)
+			previews, errs := collectProvider(tData.sources)
 
-			trigger <- time.Now()
-			trigger <- time.Now()
-			close(trigger)
-
-			for i := 0; i < len(tData.previews)*2; i++ {
-				previews = append(previews, <-previewsChan)
+			assert.Empty(t, errs)
+			for _, p := range tData.previews {
+				assert.Contains(t, previews, p)
 			}
+		})
+	}
+}
 
-			for i := 0; i < len(tData.errors)*2; i++ {
-				errs = append(errs, <-errorsChan)
-			}
+func TestRssProviderSendErrors(t *testing.T) {
+	for i, tData := range tsProviderSendErrors {
+		t.Run(fmt.Sprintf("sample %d", i), func(t *testing.T) {
+			t.Parallel()
 
-			assert.Equal(t, len(tData.previews)*2, len(previews))
-			for _, preview := range previews {
-				assert.Contains(t, tData.previews, preview)
-			}
+			previews, errs := collectProvider(tData.sources)
 
-			assert.Equal(t, len(tData.errors)*2, len(errs))
+			assert.Empty(t, previews)
+			assert.Equal(t, len(tData.errors), len(errs))
 		})
 	}
 }
 
 func TestProviderContextCancellation(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.TODO())
-	provider := NewRssNewsProvider(nil, make(chan time.Time))
+	provider := NewRssProvider(nil, make(chan time.Time))
 	exit := make(chan bool)
 
 	go func() {
@@ -61,10 +53,41 @@ func TestProviderContextCancellation(t *testing.T) {
 	assert.True(t, ok)
 }
 
-var tsRssProvider = []struct {
+func collectProvider(sources []Source) (previews []news.Preview, errors []error) {
+	previewsChan := make(chan news.Preview)
+	errorsChan := make(chan error)
+	waitProvider := make(chan bool)
+	trigger := make(chan time.Time)
+	ctx, cancel := context.WithCancel(context.TODO())
+
+	provider := NewRssProvider(sources, trigger)
+
+	go func() {
+		for p := range previewsChan {
+			previews = append(previews, p)
+		}
+	}()
+	go func() {
+		for e := range errorsChan {
+			errors = append(errors, e)
+		}
+	}()
+
+	go func() {
+		provider.Provide(ctx, previewsChan, errorsChan)
+		waitProvider <- true
+	}()
+
+	trigger <- time.Now()
+	cancel()
+	<-waitProvider
+
+	return previews, errors
+}
+
+var tsProviderSendPreviews = []struct {
 	sources  []Source
 	previews []news.Preview
-	errors   []error
 }{
 	{
 		[]Source{
@@ -72,27 +95,27 @@ var tsRssProvider = []struct {
 			{"http://sample/url/2", newHttpClientMock("http://sample/url/2", chanSamples[4].xml)},
 		},
 		append(append(make([]news.Preview, 0), chanSamples[3].channel.GetNews()...), chanSamples[4].channel.GetNews()...),
-		nil,
 	},
-
 	{
 		[]Source{
 			{"http://sample/url/2", newHttpClientMock("http://sample/url/2", chanSamples[4].xml)},
 		},
 		append(make([]news.Preview, 0), chanSamples[4].channel.GetNews()...),
-		nil,
-	},
-	{
-		[]Source{
-			{"http://sample/url/1", newHttpClientMock("http://sample/url/1", chanSamples[3].xml)},
-			{"http://sample/url/2", newHttpClientMock("http://sample/url/2", `<?xml version="1.0"?><xml></xl>`)},
-		},
-		chanSamples[3].channel.GetNews(),
-		[]error{errors.New("expected element type <rss> but have <xml>")},
 	},
 	{
 		[]Source{},
 		[]news.Preview{},
-		nil,
+	},
+}
+
+var tsProviderSendErrors = []struct {
+	sources []Source
+	errors  []error
+}{
+	{
+		[]Source{
+			{"http://sample/url/2", newHttpClientMock("http://sample/url/2", `<?xml version="1.0"?><xml></xl>`)},
+		},
+		[]error{errors.New("expected element type <rss> but have <xml>")},
 	},
 }
