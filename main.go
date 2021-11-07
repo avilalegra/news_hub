@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 )
 
 func main() {
@@ -21,11 +20,11 @@ func main() {
 
 	monitorConfigDependantServices()
 
-	fmt.Printf("App running at: %s\n", os.Getenv("ServerAddr"))
+	fmt.Println("App running at 0.0.0.0:8085")
 	fmt.Println("Mongo express running at: localhost:8081")
 
 	log.Fatal(
-		http.ListenAndServe(os.Getenv("ServerAddr"), handler.NewServerHttpHandler()),
+		http.ListenAndServe("0.0.0.0:8085", handler.NewServerHttpHandler()),
 	)
 }
 
