@@ -5,8 +5,9 @@
 {{define "body"}}
     <main class="p-8 pt-10 ">
         <div class="m-auto md:w-8/12">
-            <form class="flex m-auto rounded-full md:m-0 border-2 hover:shadow-md p-2 md:px-4" method="get">
-                <input class="flex-1 outline-none" type="text" name="keywords" value="{{.Keywords}}">
+            <form class="flex m-auto rounded-full md:m-0 border-2 hover:shadow-md p-2 md:px-4" method="get" autocomplete="off">
+                <input class="flex-1 outline-none" type="text" name="keywords" value="{{.Keywords}}"
+                       placeholder="Buscar noticias">
                 <button class="pl-3 border-l-2"><i class="fas fa-search"></i></button>
             </form>
 
