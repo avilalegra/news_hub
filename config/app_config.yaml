@@ -8,11 +8,10 @@ rss_news_provider:
     - "https://e00-elmundo.uecdn.es/elmundo/rss/espana.xml"
     - "https://okdiario.com/feed"
     - "https://e00-expansion.uecdn.es/rss/portada.xml"
-    - "http://feeds2.feedburner.com/libertaddigital/portada"
     - "https://www.abc.es/rss/feeds/abc_ultima.xml"
     - "https://www.abc.es/rss/feeds/abcPortada.xml"
     - "https://periodistadigital.webnode.es/rss/all.xml"
-  period: 1
+  period: 5
 
 news_cleaner:
   ttl: 1440 #24H
