@@ -132,6 +132,10 @@ var tsSearch = []struct {
 	count    int
 }{
 	{
+		"Guías nuevas medidas",
+		0,
+	},
+	{
 		"núcleos poblacionales",
 		1,
 	},
@@ -141,7 +145,7 @@ var tsSearch = []struct {
 	},
 	{
 		"lava dirección confinados hierro",
-		1,
+		0,
 	},
 	{
 		"directo, municipio",
@@ -149,15 +153,23 @@ var tsSearch = []struct {
 	},
 	{
 		"Display; Support. PosTing",
-		2,
+		1,
+	},
+	{
+		"<ul> <li>",
+		0,
 	},
 	{
 		"linux kernel",
-		2,
+		1,
 	},
 	{
 		"linux kernel covid",
-		3,
+		0,
+	},
+	{
+		"covid aforo",
+		1,
 	},
 }
 

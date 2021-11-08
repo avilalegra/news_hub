@@ -9,9 +9,10 @@ import (
 )
 
 type mongoRepo struct {
-	Db           *mongo.Database
-	prevCol      *mongo.Collection
-	timeProvider unixTimeProvider
+	db              *mongo.Database
+	prevCol         *mongo.Collection
+	timeProvider    unixTimeProvider
+	minMatchPercent int
 }
 
 func (r mongoRepo) Store(preview news.Preview) {
@@ -30,9 +31,10 @@ func (r mongoRepo) Remove(preview news.Preview) {
 	}
 }
 
-func (r mongoRepo) FindRelated(keywords string) []news.Preview {
+func (r mongoRepo) FindRelated(searchExpr string) []news.Preview {
 	var previews []news.Preview
-	cursor, err := r.prevCol.Find(context.TODO(), bson.M{"$text": bson.M{"$search": keywords}})
+	var related []news.Preview
+	cursor, err := r.prevCol.Find(context.TODO(), bson.M{"$text": bson.M{"$search": searchExpr}})
 	if err != nil {
 		panic(err)
 	}
@@ -40,7 +42,13 @@ func (r mongoRepo) FindRelated(keywords string) []news.Preview {
 	if err != nil {
 		panic(err)
 	}
-	return previews
+
+	for _, p := range previews {
+		if p.MatchPercent(searchExpr) > r.minMatchPercent {
+			related = append(related, p)
+		}
+	}
+	return related
 }
 
 func (r mongoRepo) FindBefore(unixTime int64) []news.Preview {
@@ -70,7 +78,7 @@ func (r mongoRepo) findByLink(link string) *news.Preview {
 }
 
 func newMongoRepo(database *mongo.Database, timeProvider unixTimeProvider) mongoRepo {
-	return mongoRepo{database, database.Collection("news_previews"), timeProvider}
+	return mongoRepo{database, database.Collection("news_previews"), timeProvider, 80}
 }
 
 func NewMongoKeeperFinder() news.KeeperFinder {
