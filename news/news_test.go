@@ -105,6 +105,12 @@ func TestCleanerContextCancellation(t *testing.T) {
 	assert.True(t, <-exit)
 }
 
+func TestPreviewMatchSearchExpr(t *testing.T) {
+	for _, tData := range tsPreviewMatchSearchExpr {
+		assert.Equal(t, tData.match, tData.preview.MatchPercent(tData.expr), tData.expr)
+	}
+}
+
 type writerMock struct {
 	msg string
 }
@@ -126,5 +132,60 @@ var tsCleaner = []Preview{
 	{
 		Link:        `http://www.rtve.es/noticias/20210928/erupcion-palma-directo-lava-llega-800-metros-del-mar-cambia-direccion-norte/2175602.shtml`,
 		RegUnixTime: time.Now().Unix() - int64((24 * time.Hour).Seconds()) + 10,
+	},
+}
+
+var tsPreviewMatchSearchExpr = []struct {
+	preview Preview
+	expr    string
+	match   int
+}{
+	{
+		Preview{
+			Title:       `Erupción en La Palma, en directo | La lava llega a 800 metros del mar y cambia de dirección al norte`,
+			Description: `<ul> <li>Varios n&uacute;cleos poblacionales del municipio de Tazacorte han sido confinados</li> <li>La colada de lava podr&iacute;a llegar a la costa en las pr&oacute;ximas horas</li> </ul><br/><a href="http://www.rtve.es/noticias/20210928/erupcion-palma-directo-lava-llega-800-metros-del-mar-cambia-direccion-norte/2175602.shtml">Leer la noticia completa</a><img src="http://secure-uk.imrworldwide.com/cgi-bin/m?ci=es-rssrtve&cg=F-N-B-TENOTICI-TESESPE01-TES800089&si=http://www.rtve.es/noticias/20210928/erupcion-palma-directo-lava-llega-800-metros-del-mar-cambia-direccion-norte/2175602.shtml" alt=""/>`,
+		},
+		"núcleos poblacionales la palma",
+		100,
+	},
+	{
+		Preview{
+			Title:       "Energías renovables",
+			Description: "La cumbre sobre el cambio climático, COP26, que se celebra en la ciudad de Glasgow (Escocia) ha incidido en que las energías fósiles son las más contaminantes para el medioambiente",
+		},
+		"cumbre Escocia.",
+		100,
+	},
+	{
+		Preview{
+			Title:       "Energías renovables",
+			Description: "La cumbre sobre el cambio climático, COP26, que se celebra en la ciudad de Glasgow (Escocia) ha incidido en que las energías fósiles son las más contaminantes para el medioambiente",
+		},
+		"Cumbre glasgow; energías renovables.",
+		100,
+	},
+	{
+		Preview{
+			Title:       "Energías renovables",
+			Description: "La cumbre sobre el cambio climático, COP26, que se celebra en la ciudad de Glasgow (Escocia) ha incidido en que las energías fósiles son las más contaminantes para el medioambiente",
+		},
+		"Noticias cumbre Glasgow energías renovables",
+		80,
+	},
+	{
+		Preview{
+			Title:       "Energías renovables",
+			Description: "La cumbre sobre el cambio climático, COP26, que se celebra en la ciudad de Glasgow (Escocia) ha incidido en que las energías fósiles son las más contaminantes para el medioambiente",
+		},
+		"energía renovable",
+		100,
+	},
+	{
+		Preview{
+			Title:       "Energías renovables",
+			Description: "La cumbre sobre el cambio climático, COP26, que se celebra en la ciudad de Glasgow (Escocia) ha incidido en que las energías fósiles son las más contaminantes para el medioambiente",
+		},
+		"combustibles fósiles",
+		50,
 	},
 }

@@ -3,7 +3,11 @@ package news
 import (
 	"context"
 	"fmt"
+	strip "github.com/grokify/html-strip-tags-go"
+	"html"
 	"log"
+	"regexp"
+	"strings"
 	"time"
 )
 
@@ -22,12 +26,39 @@ type Preview struct {
 	RegUnixTime int64
 }
 
+func (p Preview) MatchPercent(searchExpr string) int {
+	exprWords := splitWords(searchExpr)
+	contWords := splitWords(strip.StripTags(html.UnescapeString(p.Title + " " + p.Description)))
+	var matches []string
+
+	for _, exprWord := range exprWords {
+		regx := regexp.MustCompile(".*" + exprWord + ".*")
+		for _, cword := range contWords {
+			if regx.MatchString(cword) {
+				matches = append(matches, exprWord)
+				break
+			}
+		}
+	}
+	matchingPercent := 100 * len(matches) / len(exprWords)
+
+	return matchingPercent
+}
+
+func splitWords(str string) (words []string) {
+	words = strings.Fields(str)
+	for i, w := range words {
+		words[i] = strings.ToLower(strings.Trim(w, ",.;"))
+	}
+	return
+}
+
 type Provider interface {
 	Provide(context.Context, chan<- Preview, chan<- error)
 }
 
 type Finder interface {
-	FindRelated(keywords string) []Preview
+	FindRelated(searchExpr string) []Preview
 	FindBefore(unixTime int64) []Preview
 }
 
