@@ -91,7 +91,9 @@ func (c Collector) Run(ctx context.Context) {
 	for running := true; running; {
 		select {
 		case preview := <-prvChan:
-			c.Keeper.Store(preview)
+			if preview.PubTime < time.Now().Unix() {
+				c.Keeper.Store(preview)
+			}
 		case err := <-errChan:
 			c.Logger.Println(err)
 		case <-ctx.Done():

@@ -34,6 +34,35 @@ func TestCollector(t *testing.T) {
 	assert.Equal(t, Previews, kf.Previews)
 }
 
+func TestCollectorDoesntTakeFuturePreviews(t *testing.T) {
+	var futurePrev = []Preview{
+		{
+			Link:    "foo",
+			PubTime: time.Now().Unix() + 100,
+		},
+		{
+			Link:    "bar",
+			PubTime: time.Now().Unix() - 100,
+		},
+	}
+
+	kf := &KeeperFinderFake{}
+	trigger := make(chan time.Time)
+	provider := NewProviderMock(trigger, futurePrev, nil)
+
+	collector := Collector{
+		[]Provider{provider},
+		kf,
+		log.Default(),
+	}
+
+	go collector.Run(context.Background())
+
+	trigger <- time.Now()
+	time.Sleep(1 * time.Millisecond)
+	assert.Equal(t, futurePrev[1:], kf.Previews)
+}
+
 func TestCollectorContextCancellation(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	providerA := NewProviderMock(make(chan time.Time), Previews[0:2], nil)
