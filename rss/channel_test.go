@@ -70,10 +70,19 @@ func TestParsePubTime(t *testing.T) {
 			assert.Equal(t, tData.time, parsedTime)
 		}
 	}
-	parsedTime, err := parsePubTime("2021-11-08T11:39:14+01")
+}
 
-	assert.Equal(t, int64(0), parsedTime)
-	assert.Equal(t, errors.New("not supported time format"), err)
+func TestParsePubTimeErrors(t *testing.T) {
+	var tsParsePubTimeErrors = []string{
+		"invalid format",
+		"",
+	}
+
+	for _, timeExpr := range tsParsePubTimeErrors {
+		parsedTime, err := parsePubTime(timeExpr)
+		assert.Equal(t, int64(0), parsedTime)
+		assert.Equal(t, errors.New("not supported time format"), err)
+	}
 }
 
 var tsParsePubTime = []struct {
