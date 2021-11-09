@@ -26,6 +26,7 @@ type Preview struct {
 	RegUnixTime int64
 }
 
+// MatchPercent TODO: Refactor towards efficiency
 func (p Preview) MatchPercent(searchExpr string) int {
 	exprWords := splitWords(searchExpr)
 	contWords := splitWords(strip.StripTags(html.UnescapeString(p.Title + " " + p.Description)))

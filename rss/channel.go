@@ -4,8 +4,10 @@ import (
 	"avilego.me/recent_news/news"
 	"bytes"
 	"encoding/xml"
+	"errors"
 	"io"
 	"net/http"
+	"time"
 )
 
 type Source struct {
@@ -116,6 +118,21 @@ func (tr Trimmer) Token() (xml.Token, error) {
 		t = xml.CharData(bytes.TrimSpace(cd))
 	}
 	return t, err
+}
+
+func parsePubTime(timeExpr string) (int64, error) {
+	timeFormats := []string{
+		time.RFC1123Z,
+		time.RFC1123,
+	}
+
+	for _, fmt := range timeFormats {
+		if parsedTime, err := time.Parse(fmt, timeExpr); err == nil {
+			return parsedTime.Unix(), nil
+		}
+	}
+
+	return 0, errors.New("not supported time format")
 }
 
 func newTokenReader(xmlText []byte) xml.TokenReader {
