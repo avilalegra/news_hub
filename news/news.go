@@ -23,6 +23,7 @@ type Preview struct {
 	Link        string
 	Description string
 	Source      *Source
+	PubTime     int64
 	RegUnixTime int64
 }
 

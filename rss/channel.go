@@ -58,6 +58,7 @@ func (ch Channel) GetNews() []news.Preview {
 			Link:        item.Link,
 			Description: item.Description,
 			Source:      &extSource,
+			PubTime:     item.PubTime.UnixTime,
 		}
 		previews[i] = ext
 	}
