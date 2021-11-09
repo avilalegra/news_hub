@@ -80,6 +80,7 @@ type Item struct {
 	Title       string   `xml:"title"`
 	Link        string   `xml:"link"`
 	Description string   `xml:"description"`
+	PubTime     PubTime  `xml:"pubDate"`
 }
 
 type HttpClient interface {
@@ -118,6 +119,24 @@ func (tr Trimmer) Token() (xml.Token, error) {
 		t = xml.CharData(bytes.TrimSpace(cd))
 	}
 	return t, err
+}
+
+type PubTime struct {
+	UnixTime int64
+}
+
+func (pubTime *PubTime) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+	var timeExpr string
+	err := d.DecodeElement(&timeExpr, &start)
+	if err != nil {
+		return err
+	}
+	unixTime, err := parsePubTime(timeExpr)
+	if err != nil {
+		return err
+	}
+	pubTime.UnixTime = unixTime
+	return nil
 }
 
 func parsePubTime(timeExpr string) (int64, error) {
