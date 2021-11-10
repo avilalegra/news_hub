@@ -113,6 +113,21 @@ func getAllStoredPreviews() (prevs []news.Preview) {
 	return
 }
 
+func TestLatestIntegration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+	RecreateDb()
+	loadDbFixtures()
+	repo := newMongoRepo(Database, nil)
+
+	for i := 1; i <= len(news.Previews); i++ {
+		previews := repo.FindLatest(i)
+		assert.Len(t, previews, i)
+		assert.Equal(t, news.Previews[0:i], previews)
+	}
+}
+
 func loadDbFixtures() {
 	repo := newMongoRepo(Database, nil)
 	for _, preview := range news.Previews {

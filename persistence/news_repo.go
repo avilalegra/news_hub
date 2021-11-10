@@ -5,6 +5,7 @@ import (
 	"context"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"time"
 )
 
@@ -54,6 +55,20 @@ func (r mongoRepo) FindRelated(searchExpr string) []news.Preview {
 func (r mongoRepo) FindBefore(unixTime int64) []news.Preview {
 	var previews []news.Preview
 	cursor, err := r.prevCol.Find(context.TODO(), bson.M{"regunixtime": bson.M{"$lt": unixTime}})
+	if err != nil {
+		panic(err)
+	}
+	err = cursor.All(context.TODO(), &previews)
+	if err != nil {
+		panic(err)
+	}
+	return previews
+}
+
+func (r mongoRepo) FindLatest(count int) []news.Preview {
+	var previews []news.Preview
+	opts := options.Find().SetSort(bson.D{{"pubtime", -1}}).SetLimit(int64(count))
+	cursor, err := r.prevCol.Find(nil, bson.D{}, opts)
 	if err != nil {
 		panic(err)
 	}

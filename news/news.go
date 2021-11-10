@@ -62,6 +62,7 @@ type Provider interface {
 type Finder interface {
 	FindRelated(searchExpr string) []Preview
 	FindBefore(unixTime int64) []Preview
+	FindLatest(count int) []Preview
 }
 
 type Keeper interface {
