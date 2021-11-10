@@ -64,24 +64,8 @@ func TestGetChannelNews(t *testing.T) {
 
 func TestParsePubTime(t *testing.T) {
 	for _, tData := range tsParsePubTime {
-		if parsedTime, err := parsePubTime(tData.expr); err != nil {
-			assert.FailNow(t, err.Error())
-		} else {
-			assert.Equal(t, tData.time, parsedTime)
-		}
-	}
-}
-
-func TestParsePubTimeErrors(t *testing.T) {
-	var tsParsePubTimeErrors = []string{
-		"invalid format",
-		"",
-	}
-
-	for _, timeExpr := range tsParsePubTimeErrors {
-		parsedTime, err := parsePubTime(timeExpr)
-		assert.Equal(t, int64(0), parsedTime)
-		assert.Equal(t, errors.New("not supported time format"), err)
+		parsedTime := parsePubTime(tData.expr)
+		assert.Equal(t, tData.time, parsedTime)
 	}
 }
 
@@ -96,6 +80,14 @@ var tsParsePubTime = []struct {
 	{
 		"Mon, 08 Nov 2021 16:54:00 +0100",
 		1636386840,
+	},
+	{
+		"invalid format",
+		0,
+	},
+	{
+		"",
+		0,
 	},
 }
 

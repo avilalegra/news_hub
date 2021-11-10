@@ -4,7 +4,6 @@ import (
 	"avilego.me/recent_news/news"
 	"bytes"
 	"encoding/xml"
-	"errors"
 	"io"
 	"net/http"
 	"time"
@@ -132,15 +131,12 @@ func (pubTime *PubTime) UnmarshalXML(d *xml.Decoder, start xml.StartElement) err
 	if err != nil {
 		return err
 	}
-	unixTime, err := parsePubTime(timeExpr)
-	if err != nil {
-		return err
-	}
+	unixTime := parsePubTime(timeExpr)
 	pubTime.UnixTime = unixTime
 	return nil
 }
 
-func parsePubTime(timeExpr string) (int64, error) {
+func parsePubTime(timeExpr string) int64 {
 	timeFormats := []string{
 		time.RFC1123Z,
 		time.RFC1123,
@@ -148,11 +144,11 @@ func parsePubTime(timeExpr string) (int64, error) {
 
 	for _, fmt := range timeFormats {
 		if parsedTime, err := time.Parse(fmt, timeExpr); err == nil {
-			return parsedTime.Unix(), nil
+			return parsedTime.Unix()
 		}
 	}
 
-	return 0, errors.New("not supported time format")
+	return 0
 }
 
 func newTokenReader(xmlText []byte) xml.TokenReader {
