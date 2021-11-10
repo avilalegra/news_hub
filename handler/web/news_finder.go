@@ -4,7 +4,6 @@ import (
 	"avilego.me/recent_news/env"
 	"avilego.me/recent_news/news"
 	"html/template"
-	"log"
 	"net/http"
 )
 
@@ -12,22 +11,26 @@ type SearchHandler struct {
 	Finder news.Finder
 }
 
-//TODO: Needs to be refactored
+const latestNewsCount = 50
+
 func (h SearchHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	var previews []news.Preview
 	expr := r.URL.Query().Get("keywords")
-	previews := h.Finder.FindRelated(expr)
-	var files = []string{
-		env.ProjDir() + "/templates/base.gohtml",
-		env.ProjDir() + "/templates/find_news.gohtml",
+
+	if expr == "" {
+		previews = h.Finder.FindLatest(latestNewsCount)
+	} else {
+		previews = h.Finder.FindRelated(expr)
 	}
+
 	ts, err := template.New("find_news.gohtml").Funcs(template.FuncMap{
 		"unsafe": RenderUnsafe,
-	}).ParseFiles(files...)
-
+	}).ParseFiles(
+		env.ProjDir()+"/templates/base.gohtml",
+		env.ProjDir()+"/templates/find_news.gohtml",
+	)
 	if err != nil {
-		log.Println(err.Error())
-		http.Error(w, "Internal Server Error", 500)
-		return
+		panic(err)
 	}
 
 	var data = struct {
@@ -40,10 +43,8 @@ func (h SearchHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	err = ts.Execute(w, data)
 	if err != nil {
-		log.Println(err.Error())
-		http.Error(w, "Internal Server Error", 500)
+		panic(err)
 	}
-
 }
 
 func RenderUnsafe(s string) template.HTML {
