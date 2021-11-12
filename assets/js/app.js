@@ -6,7 +6,7 @@ $(function () {
 const appHeader = function () {
     const header = {
         fixed: false,
-        scrollTopLimit: 160,
+        scrollTopLimit: 360,
         $element: $("#header"),
     }
 

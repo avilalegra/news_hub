@@ -13,24 +13,27 @@
     display: block;
 }
 
+.header-content button {
+    color: darkslategray;
+    background-color: ghostwhite;
+    padding: 8px;
+}
+
 .js-header-fixed {
     position: fixed;
     width: 100%;
     top: 0;
     left: 0;
-    padding-top: 15px;
     padding-bottom: 15px;
 }
 
 .js-header-fixed .header-content {
     margin: auto;
-    width: 89%;
-    opacity: 100%;
-    transition: position 1s;
+    padding-bottom: 15px;
 }
 
 @media (min-width: 768px) {
     .js-header-fixed .header-content {
-        width: 64.5%;
+        width: 63%;
     }
 }
