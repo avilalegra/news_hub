@@ -150,6 +150,11 @@ func TestCleanerConfigValidation(t *testing.T) {
 	}
 }
 
+func TestPositiveNumberTypeValidation(t *testing.T) {
+	count := positiveNumber(-1)
+	assert.Equal(t, errors.New("invalid config: should be a positive number"), count.validate())
+}
+
 func TestAppConfigValidation(t *testing.T) {
 	for i, tData := range tsAppConfigValidation {
 		t.Run(fmt.Sprintf("sample %d", i), func(t *testing.T) {

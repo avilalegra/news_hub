@@ -76,6 +76,13 @@ func (c CleanerConfig) validate() error {
 
 type positiveNumber int
 
+func (n positiveNumber) validate() error {
+	if n <= 0 {
+		return errors.New("invalid config: should be a positive number")
+	}
+	return nil
+}
+
 type parser func() (*AppConfig, error)
 
 var defaultParser parser
