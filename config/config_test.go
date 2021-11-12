@@ -63,35 +63,37 @@ func TestFileConfigParserReturnErrorWhenInvalidYaml(t *testing.T) {
 }
 
 func TestLoadConfigFuncUpdatesAppConfig(t *testing.T) {
-	Current = AppConfig{}
-	defaultParser = func() (*AppConfig, error) {
-		return &tsYamlConfigParsing.config, nil
+	Current = appConfig{}
+	defaultParser = func() (*appConfig, error) {
+		return &validConfig, nil
 	}
 	err := LoadConfig()
 	if err != nil {
 		assert.Nil(t, err)
 	}
-	assert.Equal(t, tsYamlConfigParsing.config, Current)
+	assert.Equal(t, validConfig, Current)
 }
 
 func TestLoadConfigFuncDoesntUpdatesAppConfigWhenInvalidConfig(t *testing.T) {
-	Current = AppConfig{}
-	defaultParser = func() (*AppConfig, error) {
+	Current = appConfig{}
+	defaultParser = func() (*appConfig, error) {
 		return &invalidConfig, nil
 	}
 	LoadConfig()
-	assert.Equal(t, AppConfig{}, Current)
+	assert.Equal(t, appConfig{}, Current)
 }
 
 func TestLoadConfigFuncNotifyChangesWhenValidConfig(t *testing.T) {
-	Current = AppConfig{}
-	defaultParser = newRawConfigParser([]byte(tsYamlConfigParsing.yaml))
+	Current = appConfig{}
+	defaultParser = func() (*appConfig, error) {
+		return &validConfig, nil
+	}
 	var wg sync.WaitGroup
 
 	go func() {
 		wg.Add(1)
 		conf := <-Subject
-		assert.Equal(t, tsYamlConfigParsing.config, conf)
+		assert.Equal(t, validConfig, conf)
 		wg.Done()
 	}()
 
@@ -100,15 +102,15 @@ func TestLoadConfigFuncNotifyChangesWhenValidConfig(t *testing.T) {
 }
 
 func TestLoadConfigFuncDoesntNotifyChangesWhenInvalidConfig(t *testing.T) {
-	Current = AppConfig{}
-	defaultParser = func() (*AppConfig, error) {
+	Current = appConfig{}
+	defaultParser = func() (*appConfig, error) {
 		return &invalidConfig, nil
 	}
 	var wg sync.WaitGroup
 
 	go func() {
 		conf := <-Subject
-		assert.Equal(t, AppConfig{}, conf)
+		assert.Equal(t, appConfig{}, conf)
 		wg.Done()
 	}()
 
@@ -117,15 +119,15 @@ func TestLoadConfigFuncDoesntNotifyChangesWhenInvalidConfig(t *testing.T) {
 }
 
 func TestLoadConfigFuncReturnErrorWhenInvalidYaml(t *testing.T) {
-	Current = AppConfig{}
+	Current = appConfig{}
 	defaultParser = newRawConfigParser([]byte(invalidYaml))
 	err := LoadConfig()
 	assert.NotNil(t, err)
 }
 
 func TestLoadConfigFuncReturnErrorWhenInvalidConfig(t *testing.T) {
-	Current = AppConfig{}
-	defaultParser = func() (*AppConfig, error) {
+	Current = appConfig{}
+	defaultParser = func() (*appConfig, error) {
 		return &invalidConfig, nil
 	}
 	err := LoadConfig()
@@ -151,7 +153,7 @@ func TestCleanerConfigValidation(t *testing.T) {
 }
 
 func TestPositiveNumberTypeValidation(t *testing.T) {
-	count := positiveNumber(-1)
+	count := natNumber(-1)
 	assert.Equal(t, errors.New("invalid config: should be a positive number"), count.validate())
 }
 
@@ -164,23 +166,23 @@ func TestAppConfigValidation(t *testing.T) {
 	}
 }
 
-var validConfig = AppConfig{
-	RssNewsProvidersConfig{
+var validConfig = appConfig{
+	rssNewsProvidersConfig{
 		Sources: []string{
 			"http://api2.rtve.es/rss/temas_noticias.xml",
 			"http://rss.cnn.com/rss/edition_world.rss",
 		},
 		MinutesPeriod: 5,
 	},
-	CleanerConfig{30, 10},
+	cleanerConfig{30, 10},
 	10,
 }
 
-var invalidConfig = AppConfig{}
+var invalidConfig = appConfig{}
 
 var tsYamlConfigParsing = struct {
 	yaml   string
-	config AppConfig
+	config appConfig
 }{
 	`
 rss_news_provider:
@@ -206,11 +208,11 @@ rss_news_provider:
 `
 
 var tsAppConfigValidation = []struct {
-	conf AppConfig
+	conf appConfig
 	err  error
 }{
 	{
-		AppConfig{
+		appConfig{
 			tsRssNewsProvidersConfigErrorsValidation[1].conf,
 			validConfig.CleanerConfig,
 			10,
@@ -218,7 +220,7 @@ var tsAppConfigValidation = []struct {
 		tsRssNewsProvidersConfigErrorsValidation[1].err,
 	},
 	{
-		AppConfig{
+		appConfig{
 			validConfig.RNPConfig,
 			tsCleanerConfigErrorsValidation[1].conf,
 			30,
@@ -230,7 +232,7 @@ var tsAppConfigValidation = []struct {
 		nil,
 	},
 	{
-		AppConfig{
+		appConfig{
 			validConfig.RNPConfig,
 			validConfig.CleanerConfig,
 			-1,
@@ -240,11 +242,11 @@ var tsAppConfigValidation = []struct {
 }
 
 var tsRssNewsProvidersConfigErrorsValidation = []struct {
-	conf RssNewsProvidersConfig
+	conf rssNewsProvidersConfig
 	err  error
 }{
 	{
-		RssNewsProvidersConfig{
+		rssNewsProvidersConfig{
 			Sources: []string{
 				"http://rss.cnn.com/rss/edition_world.rss",
 			},
@@ -253,7 +255,7 @@ var tsRssNewsProvidersConfigErrorsValidation = []struct {
 		nil,
 	},
 	{
-		RssNewsProvidersConfig{
+		rssNewsProvidersConfig{
 			Sources: []string{
 				"http://rss.cnn.com/rss/edition_world.rss",
 			},
@@ -262,7 +264,7 @@ var tsRssNewsProvidersConfigErrorsValidation = []struct {
 		errors.New("invalid rss provider config: period should be a positive number"),
 	},
 	{
-		RssNewsProvidersConfig{
+		rssNewsProvidersConfig{
 			Sources:       []string{},
 			MinutesPeriod: 1,
 		},
@@ -271,23 +273,23 @@ var tsRssNewsProvidersConfigErrorsValidation = []struct {
 }
 
 var tsCleanerConfigErrorsValidation = []struct {
-	conf CleanerConfig
+	conf cleanerConfig
 	err  error
 }{
 	{
-		CleanerConfig{30, 2},
+		cleanerConfig{30, 2},
 		nil,
 	},
 	{
-		CleanerConfig{0, 2},
+		cleanerConfig{0, 2},
 		errors.New("invalid cleaner config: ttl should be a positive number"),
 	},
 	{
-		CleanerConfig{10, 30},
+		cleanerConfig{10, 30},
 		errors.New("invalid cleaner config: ttl should be greater than period"),
 	},
 	{
-		CleanerConfig{30, -10},
+		cleanerConfig{30, -10},
 		errors.New("invalid cleaner config: period should be a positive number"),
 	},
 }

@@ -14,13 +14,13 @@ import (
 
 var appConfFilePath = env.ProjDir() + "/config/app_config.yaml"
 
-type AppConfig struct {
-	RNPConfig       RssNewsProvidersConfig `yaml:"rss_news_provider"`
-	CleanerConfig   CleanerConfig          `yaml:"news_cleaner"`
-	LatestNewsCount positiveNumber         `yaml:"latest_news_count"`
+type appConfig struct {
+	RNPConfig       rssNewsProvidersConfig `yaml:"rss_news_provider"`
+	CleanerConfig   cleanerConfig          `yaml:"news_cleaner"`
+	LatestNewsCount natNumber              `yaml:"latest_news_count"`
 }
 
-func (c AppConfig) validate() (validationError error) {
+func (c appConfig) validate() (validationError error) {
 	defer func() {
 		if err := recover(); err != nil {
 			validationError = err.(error)
@@ -42,13 +42,13 @@ func (c AppConfig) validate() (validationError error) {
 	return
 }
 
-type RssNewsProvidersConfig struct {
-	Sources       []string `yaml:",flow"`
-	MinutesPeriod int      `yaml:"period"`
+type rssNewsProvidersConfig struct {
+	Sources       []string  `yaml:",flow"`
+	MinutesPeriod natNumber `yaml:"period"`
 }
 
-func (c RssNewsProvidersConfig) validate() error {
-	if c.MinutesPeriod <= 0 {
+func (c rssNewsProvidersConfig) validate() error {
+	if c.MinutesPeriod.validate() != nil {
 		return errors.New("invalid rss provider config: period should be a positive number")
 	}
 	if len(c.Sources) == 0 {
@@ -57,40 +57,40 @@ func (c RssNewsProvidersConfig) validate() error {
 	return nil
 }
 
-type CleanerConfig struct {
-	Ttl           int `yaml:"ttl"`
-	MinutesPeriod int `yaml:"period"`
+type cleanerConfig struct {
+	Ttl           natNumber `yaml:"ttl"`
+	MinutesPeriod natNumber `yaml:"period"`
 }
 
-func (c CleanerConfig) validate() error {
-	if c.Ttl <= 0 {
+func (c cleanerConfig) validate() error {
+	if c.Ttl.validate() != nil {
 		return errors.New("invalid cleaner config: ttl should be a positive number")
 	}
 	if c.Ttl < c.MinutesPeriod {
 		return errors.New("invalid cleaner config: ttl should be greater than period")
 	}
-	if c.MinutesPeriod <= 0 {
+	if c.MinutesPeriod.validate() != nil {
 		return errors.New("invalid cleaner config: period should be a positive number")
 	}
 	return nil
 }
 
-type positiveNumber int
+type natNumber int
 
-func (n positiveNumber) validate() error {
+func (n natNumber) validate() error {
 	if n <= 0 {
 		return errors.New("invalid config: should be a positive number")
 	}
 	return nil
 }
 
-type parser func() (*AppConfig, error)
+type parser func() (*appConfig, error)
 
 var defaultParser parser
 
 func newRawConfigParser(raw []byte) parser {
-	return func() (*AppConfig, error) {
-		var appConfig AppConfig
+	return func() (*appConfig, error) {
+		var appConfig appConfig
 		err := yaml.Unmarshal(raw, &appConfig)
 		if err != nil {
 			return nil, err
@@ -101,7 +101,7 @@ func newRawConfigParser(raw []byte) parser {
 }
 
 func newFileConfigParser(filePath string) parser {
-	return func() (*AppConfig, error) {
+	return func() (*appConfig, error) {
 		reader, err := os.Open(filePath)
 		if err != nil {
 			panic(err)
@@ -111,11 +111,11 @@ func newFileConfigParser(filePath string) parser {
 	}
 }
 
-var configChanges = make(chan AppConfig)
+var configChanges = make(chan appConfig)
 
-var Subject <-chan AppConfig = configChanges
+var Subject <-chan appConfig = configChanges
 
-var Current AppConfig
+var Current appConfig
 
 func LoadConfig() error {
 	conf, err := defaultParser()
