@@ -34,6 +34,7 @@ func (c AppConfig) validate() (validationError error) {
 
 	mustValidate(c.RNPConfig.validate)
 	mustValidate(c.CleanerConfig.validate)
+	mustValidate(c.LatestNewsCount.validate)
 
 	if validationError != nil {
 		return validationError

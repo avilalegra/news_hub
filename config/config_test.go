@@ -229,6 +229,14 @@ var tsAppConfigValidation = []struct {
 		validConfig,
 		nil,
 	},
+	{
+		AppConfig{
+			validConfig.RNPConfig,
+			validConfig.CleanerConfig,
+			-1,
+		},
+		errors.New("invalid config: should be a positive number"),
+	},
 }
 
 var tsRssNewsProvidersConfigErrorsValidation = []struct {
