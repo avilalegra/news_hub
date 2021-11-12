@@ -16,3 +16,5 @@ rss_news_provider:
 news_cleaner:
   ttl: 1440 #24H
   period: 30
+
+latest_news_count: 30

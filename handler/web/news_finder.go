@@ -1,6 +1,7 @@
 package web
 
 import (
+	"avilego.me/recent_news/config"
 	"avilego.me/recent_news/env"
 	"avilego.me/recent_news/news"
 	"html/template"
@@ -11,14 +12,12 @@ type SearchHandler struct {
 	Finder news.Finder
 }
 
-const latestNewsCount = 50
-
 func (h SearchHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var previews []news.Preview
 	expr := r.URL.Query().Get("keywords")
 
 	if expr == "" {
-		previews = h.Finder.FindLatest(latestNewsCount)
+		previews = h.Finder.FindLatest(int(config.Current.LatestNewsCount))
 	} else {
 		previews = h.Finder.FindRelated(expr)
 	}
