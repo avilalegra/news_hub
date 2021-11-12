@@ -150,6 +150,8 @@ rss_news_provider:
 news_cleaner:
   ttl: 10
   period: 30
+
+latest_news_count: 10
 `,
 		AppConfig{
 			RssNewsProvidersConfig{
@@ -160,6 +162,7 @@ news_cleaner:
 				MinutesPeriod: 5,
 			},
 			CleanerConfig{10, 30},
+			10,
 		},
 	},
 	{
@@ -172,6 +175,8 @@ rss_news_provider:
 news_cleaner:
   ttl: 20
   period: 50
+
+latest_news_count: 30
 `,
 		AppConfig{
 			RssNewsProvidersConfig{
@@ -181,6 +186,7 @@ news_cleaner:
 				MinutesPeriod: 1,
 			},
 			CleanerConfig{20, 50},
+			30,
 		},
 	},
 }
@@ -202,6 +208,7 @@ var invalidAppConfig = []struct {
 		AppConfig{
 			invalidRssNewsProvidersConfig[0].conf,
 			CleanerConfig{},
+			0,
 		},
 		invalidRssNewsProvidersConfig[0].err,
 	},
@@ -209,6 +216,7 @@ var invalidAppConfig = []struct {
 		AppConfig{
 			validConfigs[0].config.RNPConfig,
 			invalidCleanerConfig[0].conf,
+			0,
 		},
 		invalidCleanerConfig[0].err,
 	},

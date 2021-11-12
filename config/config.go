@@ -15,8 +15,9 @@ import (
 var appConfFilePath = env.ProjDir() + "/config/app_config.yaml"
 
 type AppConfig struct {
-	RNPConfig     RssNewsProvidersConfig `yaml:"rss_news_provider"`
-	CleanerConfig CleanerConfig          `yaml:"news_cleaner"`
+	RNPConfig       RssNewsProvidersConfig `yaml:"rss_news_provider"`
+	CleanerConfig   CleanerConfig          `yaml:"news_cleaner"`
+	LatestNewsCount positiveNumber         `yaml:"latest_news_count"`
 }
 
 func (c AppConfig) validate() (validationError error) {
@@ -72,6 +73,8 @@ func (c CleanerConfig) validate() error {
 	}
 	return nil
 }
+
+type positiveNumber int
 
 type parser func() (*AppConfig, error)
 
