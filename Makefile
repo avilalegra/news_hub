@@ -10,7 +10,10 @@ test/unit: run/dev
 test/int: run/dev
 	@@docker-compose exec go bash -c 'GOFLAGS="-count=1" go test -run Integration -p 1 ./...'
 
-test/all: test/unit test/int
+test/all: test/clrcache test/unit test/int
+
+test/clrcache:
+	@@docker-compose exec go bash -c 'go clean -testcache'
 
 stop:
 	@docker-compose stop
