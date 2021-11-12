@@ -115,6 +115,10 @@ func LoadConfig() error {
 		return err
 	}
 
+	if err = conf.validate(); err != nil {
+		return err
+	}
+
 	Current = *conf
 
 	select {

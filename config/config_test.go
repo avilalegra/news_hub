@@ -5,111 +5,135 @@ import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
-	"log"
 	"os"
+	"sync"
 	"testing"
-	"time"
 )
 
-func TestRawConfigParserWithValidConfig(t *testing.T) {
-	for i, tData := range validConfigs {
-		t.Run(fmt.Sprintf("sample %d", i), func(t *testing.T) {
-			parser := newRawConfigParser([]byte(tData.yaml))
-			appConfig, _ := parser()
-			assert.Equal(t, tData.config, *appConfig)
-		})
-	}
+func TestRawConfigParserShouldParseValidConfig(t *testing.T) {
+	parser := newRawConfigParser([]byte(tsYamlConfigParsing.yaml))
+	appConfig, err := parser()
+
+	assert.Nil(t, err)
+	assert.Equal(t, tsYamlConfigParsing.config, *appConfig)
 }
 
-func TestRawConfigParserWithInvalidYaml(t *testing.T) {
-	for i, conf := range invalidYaml {
-		t.Run(fmt.Sprintf("sample %d", i), func(t *testing.T) {
-			parser := newRawConfigParser([]byte(conf))
-			appConfig, err := parser()
+func TestRawConfigParserReturnErrorWhenInvalidYaml(t *testing.T) {
+	parser := newRawConfigParser([]byte(invalidYaml))
+	appConfig, err := parser()
 
-			assert.Nil(t, appConfig)
-			assert.NotNil(t, err)
-		})
-	}
+	assert.Nil(t, appConfig)
+	assert.NotNil(t, err)
 }
 
-func TestFileConfigParserWithValidConfig(t *testing.T) {
+func TestFileConfigParserShouldParseValidConfig(t *testing.T) {
 	file, err := ioutil.TempFile("", "")
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	defer os.Remove(file.Name())
 
-	for _, tData := range validConfigs {
-		file.Truncate(0)
-		file.Seek(0, 0)
-
-		if _, err := file.Write([]byte(tData.yaml)); err != nil {
-			panic(err)
-		}
-
-		parser := newFileConfigParser(file.Name())
-		appConfig, _ := parser()
-		assert.Equal(t, tData.config, *appConfig)
+	parser := newFileConfigParser(file.Name())
+	if _, err := file.Write([]byte(tsYamlConfigParsing.yaml)); err != nil {
+		panic(err)
 	}
+
+	appConfig, err := parser()
+
+	assert.Nil(t, err)
+	assert.Equal(t, tsYamlConfigParsing.config, *appConfig)
 }
 
-func TestFileConfigParserWithInvalidYaml(t *testing.T) {
+func TestFileConfigParserReturnErrorWhenInvalidYaml(t *testing.T) {
 	file, err := ioutil.TempFile("", "")
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	defer os.Remove(file.Name())
-	for _, conf := range invalidYaml {
-		file.Truncate(0)
-		file.Seek(0, 0)
+	parser := newFileConfigParser(file.Name())
 
-		if _, err := file.Write([]byte(conf)); err != nil {
-			panic(err)
-		}
-
-		parser := newFileConfigParser(file.Name())
-		appConfig, err := parser()
-
-		assert.Nil(t, appConfig)
-		assert.NotNil(t, err)
+	if _, err := file.Write([]byte(invalidYaml)); err != nil {
+		panic(err)
 	}
+
+	appConfig, err := parser()
+
+	assert.Nil(t, appConfig)
+	assert.NotNil(t, err)
 }
 
 func TestLoadConfigFuncUpdatesAppConfig(t *testing.T) {
-	for i, tData := range validConfigs {
-		t.Run(fmt.Sprintf("sample %d", i), func(t *testing.T) {
-			defaultParser = newRawConfigParser([]byte(tData.yaml))
-			LoadConfig()
-			assert.Equal(t, tData.config, Current)
-		})
+	Current = AppConfig{}
+	defaultParser = func() (*AppConfig, error) {
+		return &tsYamlConfigParsing.config, nil
 	}
+	err := LoadConfig()
+	if err != nil {
+		assert.Nil(t, err)
+	}
+	assert.Equal(t, tsYamlConfigParsing.config, Current)
 }
 
-func TestLoadConfigFuncReturnsErrorOnInvalidYaml(t *testing.T) {
-	for i, conf := range invalidYaml {
-		t.Run(fmt.Sprintf("sample %d", i), func(t *testing.T) {
-			defaultParser = newRawConfigParser([]byte(conf))
-			err := LoadConfig()
-			assert.NotNil(t, err)
-		})
+func TestLoadConfigFuncDoesntUpdatesAppConfigWhenInvalidConfig(t *testing.T) {
+	Current = AppConfig{}
+	defaultParser = func() (*AppConfig, error) {
+		return &invalidConfig, nil
 	}
+	LoadConfig()
+	assert.Equal(t, AppConfig{}, Current)
 }
 
-func TestLoadConfigFuncNotifyChanges(t *testing.T) {
-	var conf AppConfig
-	defaultParser = newRawConfigParser([]byte(validConfigs[0].yaml))
+func TestLoadConfigFuncNotifyChangesWhenValidConfig(t *testing.T) {
+	Current = AppConfig{}
+	defaultParser = newRawConfigParser([]byte(tsYamlConfigParsing.yaml))
+	var wg sync.WaitGroup
+
 	go func() {
-		conf = <-Subject
+		wg.Add(1)
+		conf := <-Subject
+		assert.Equal(t, tsYamlConfigParsing.config, conf)
+		wg.Done()
 	}()
 
 	LoadConfig()
-	<-time.After(1 * time.Millisecond)
-	assert.Equal(t, validConfigs[0].config, conf)
+	wg.Wait()
+}
+
+func TestLoadConfigFuncDoesntNotifyChangesWhenInvalidConfig(t *testing.T) {
+	Current = AppConfig{}
+	defaultParser = func() (*AppConfig, error) {
+		return &invalidConfig, nil
+	}
+	var wg sync.WaitGroup
+
+	go func() {
+		conf := <-Subject
+		assert.Equal(t, AppConfig{}, conf)
+		wg.Done()
+	}()
+
+	LoadConfig()
+	wg.Wait()
+}
+
+func TestLoadConfigFuncReturnErrorWhenInvalidYaml(t *testing.T) {
+	Current = AppConfig{}
+	defaultParser = newRawConfigParser([]byte(invalidYaml))
+	err := LoadConfig()
+	assert.NotNil(t, err)
+}
+
+func TestLoadConfigFuncReturnErrorWhenInvalidConfig(t *testing.T) {
+	Current = AppConfig{}
+	defaultParser = func() (*AppConfig, error) {
+		return &invalidConfig, nil
+	}
+	err := LoadConfig()
+	assert.NotNil(t, err)
 }
 
 func TestRssNewsProviderConfigValidation(t *testing.T) {
-	for i, tData := range invalidRssNewsProvidersConfig {
+	for i, tData := range tsRssNewsProvidersConfigErrorsValidation {
 		t.Run(fmt.Sprintf("sample %d", i), func(t *testing.T) {
 			err := tData.conf.validate()
 			assert.Equal(t, tData.err, err)
@@ -118,7 +142,7 @@ func TestRssNewsProviderConfigValidation(t *testing.T) {
 }
 
 func TestCleanerConfigValidation(t *testing.T) {
-	for i, tData := range invalidCleanerConfig {
+	for i, tData := range tsCleanerConfigErrorsValidation {
 		t.Run(fmt.Sprintf("sample %d", i), func(t *testing.T) {
 			err := tData.conf.validate()
 			assert.Equal(t, tData.err, err)
@@ -127,7 +151,7 @@ func TestCleanerConfigValidation(t *testing.T) {
 }
 
 func TestAppConfigValidation(t *testing.T) {
-	for i, tData := range invalidAppConfig {
+	for i, tData := range tsAppConfigValidation {
 		t.Run(fmt.Sprintf("sample %d", i), func(t *testing.T) {
 			err := tData.conf.validate()
 			assert.Equal(t, tData.err, err)
@@ -135,12 +159,25 @@ func TestAppConfigValidation(t *testing.T) {
 	}
 }
 
-var validConfigs = []struct {
+var validConfig = AppConfig{
+	RssNewsProvidersConfig{
+		Sources: []string{
+			"http://api2.rtve.es/rss/temas_noticias.xml",
+			"http://rss.cnn.com/rss/edition_world.rss",
+		},
+		MinutesPeriod: 5,
+	},
+	CleanerConfig{30, 10},
+	10,
+}
+
+var invalidConfig = AppConfig{}
+
+var tsYamlConfigParsing = struct {
 	yaml   string
 	config AppConfig
 }{
-	{
-		`
+	`
 rss_news_provider:
   sources:
     - http://api2.rtve.es/rss/temas_noticias.xml
@@ -148,84 +185,60 @@ rss_news_provider:
   period: 5
 
 news_cleaner:
-  ttl: 10
-  period: 30
+  ttl: 30
+  period: 10
 
 latest_news_count: 10
 `,
-		AppConfig{
-			RssNewsProvidersConfig{
-				Sources: []string{
-					"http://api2.rtve.es/rss/temas_noticias.xml",
-					"http://rss.cnn.com/rss/edition_world.rss",
-				},
-				MinutesPeriod: 5,
-			},
-			CleanerConfig{10, 30},
-			10,
-		},
-	},
-	{
-		`
-rss_news_provider:
-  sources:
-    - http://rss.cnn.com/rss/edition_world.rss
-  period: 1
-
-news_cleaner:
-  ttl: 20
-  period: 50
-
-latest_news_count: 30
-`,
-		AppConfig{
-			RssNewsProvidersConfig{
-				Sources: []string{
-					"http://rss.cnn.com/rss/edition_world.rss",
-				},
-				MinutesPeriod: 1,
-			},
-			CleanerConfig{20, 50},
-			30,
-		},
-	},
+	validConfig,
 }
 
-var invalidYaml = []string{
-	`
+var invalidYaml = `
 rss_news_provider:
   sources
     http://api2.rtve.es/rss/temas_noticias.xml
   period: 5
-`,
-}
+`
 
-var invalidAppConfig = []struct {
+var tsAppConfigValidation = []struct {
 	conf AppConfig
 	err  error
 }{
 	{
 		AppConfig{
-			invalidRssNewsProvidersConfig[0].conf,
-			CleanerConfig{},
-			0,
+			tsRssNewsProvidersConfigErrorsValidation[1].conf,
+			validConfig.CleanerConfig,
+			10,
 		},
-		invalidRssNewsProvidersConfig[0].err,
+		tsRssNewsProvidersConfigErrorsValidation[1].err,
 	},
 	{
 		AppConfig{
-			validConfigs[0].config.RNPConfig,
-			invalidCleanerConfig[0].conf,
-			0,
+			validConfig.RNPConfig,
+			tsCleanerConfigErrorsValidation[1].conf,
+			30,
 		},
-		invalidCleanerConfig[0].err,
+		tsCleanerConfigErrorsValidation[1].err,
+	},
+	{
+		validConfig,
+		nil,
 	},
 }
 
-var invalidRssNewsProvidersConfig = []struct {
+var tsRssNewsProvidersConfigErrorsValidation = []struct {
 	conf RssNewsProvidersConfig
 	err  error
 }{
+	{
+		RssNewsProvidersConfig{
+			Sources: []string{
+				"http://rss.cnn.com/rss/edition_world.rss",
+			},
+			MinutesPeriod: 10,
+		},
+		nil,
+	},
 	{
 		RssNewsProvidersConfig{
 			Sources: []string{
@@ -244,10 +257,14 @@ var invalidRssNewsProvidersConfig = []struct {
 	},
 }
 
-var invalidCleanerConfig = []struct {
+var tsCleanerConfigErrorsValidation = []struct {
 	conf CleanerConfig
 	err  error
 }{
+	{
+		CleanerConfig{30, 2},
+		nil,
+	},
 	{
 		CleanerConfig{0, 2},
 		errors.New("invalid cleaner config: ttl should be a positive number"),
