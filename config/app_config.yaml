@@ -11,10 +11,10 @@ rss_news_provider:
     - "https://www.abc.es/rss/feeds/abc_ultima.xml"
     - "https://www.abc.es/rss/feeds/abcPortada.xml"
     - "https://periodistadigital.webnode.es/rss/all.xml"
-  period: 5
+  period: 2
 
 news_cleaner:
   ttl: 1440 #24H
   period: 30
 
-latest_news_count: 30
+latest_news_count: 50
